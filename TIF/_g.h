@@ -1,0 +1,114 @@
+#pragma once
+#include <cstdint>
+
+
+#include <lemon/smart_graph.h>
+#include <lemon/preflow.h>
+#include <lemon/edmonds_karp.h>
+#include <lemon/concepts/digraph.h>
+#include <lemon/concepts/maps.h>
+#include <lemon/lgf_reader.h>
+#include <lemon/elevator.h>
+#include <lemon/list_graph.h>
+
+#include "_tree.h"
+
+using namespace lemon;
+
+using Graph = ListDigraph;
+
+typedef Graph::Node Node;	
+typedef Graph::Arc DEdge;
+
+enum color {
+	white,
+	blue, 
+	red, 
+	green, 
+	yellow
+};
+
+
+
+class _g
+{
+	
+	char* filename; 
+
+	public:	
+
+		Graph dg;
+
+		int num_vertices;
+		int num_edges;
+		int num_arcs; 
+		int num_trees; // number of trees in the solution
+		int(* edges)[3]; // 2D array to store the edges
+		int(* arcs)[3]; // 2D array to store the arcs
+		int *opt_edges;
+		int num_opt_edges;
+		int *start_edge_tree;
+
+		int** opt_vertices; // 2D array to store the vertices of the optimal solution - for each tree
+		int* num_opt_vertices;
+
+		bool subsetsComputed;
+
+		bool** cycles;
+		bool* visited;
+		int num_cycles;
+		int cycle_start_vertex;
+		bool in_cycle;
+
+		std::vector <_tree *> trees;
+
+		uint32_t** subsets; // 2D array to store the subsets of vertices
+		int* nSubsets; // array to store the number of subsets for each tree
+
+		// MST 
+		int* parent_mst;  // array to store the parent of each vertex in the MST
+		uint32_t* bin_vertices; // array to store the vertices in binary format
+		int* sum_adjacent_weight; // array to store the sum weight of the adjacent edges for each vertex
+
+		// UV Seperator
+		int* seperator;
+		int num_seperators;	
+		color* v_colors;
+
+		double _gap;
+		double _opt;
+		_g(int num_vertices, int num_edges, int num_trees);
+		~_g();
+
+		void readGraph();
+		void printGraph();
+
+		void setFilename();
+
+		void computeSubsets();
+		void printSubsets();
+		void outputOPTEdges();
+
+		char* getFilename();
+		bool CheckCycles();
+
+		bool CheckCyclesRec(int i, int ep, int v);
+		void PrintCycles();
+		void PrintOptEdges(bool printWeight = false);
+		void printOPTEdges();
+
+		_g* SortEdges();
+
+		int  MST(int tree, int* mst_vertices, int n);
+		bool UVSeperator(int u, int v);
+		void ColorNeighbors(int v, color c, bool transitive);
+		bool Seperated(int u, int v);
+		void PrintMinSeperators();
+
+		void setDiGraph();	
+		void sortArcs();
+
+		// generate trees
+		void generateTrees();
+};
+

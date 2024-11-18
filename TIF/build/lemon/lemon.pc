@@ -1,0 +1,10 @@
+prefix=C:/Program Files/LEMON
+exec_prefix=C:/Program Files/LEMON/bin
+libdir=C:/Program Files/LEMON/lib
+includedir=C:/Program Files/LEMON/include
+
+Name: LEMON
+Description: Library for Efficient Modeling and Optimization in Networks
+Version: 1.3.1
+Libs: -L${libdir} -lemon     
+Cflags: -I${includedir}

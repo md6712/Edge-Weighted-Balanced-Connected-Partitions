@@ -1,0 +1,670 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      The system is: Windows - 10.0.19045 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.9.5+33de0b227 for .NET Framework
+      Build started 17/07/2024 11:18:54.
+      
+      Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdC.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdC\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate".
+      Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdC\\CompilerIdC.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:00.70
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/3.30.0/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.9.5+33de0b227 for .NET Framework
+      Build started 17/07/2024 11:18:55.
+      
+      Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdCXX.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
+      Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\3.30.0\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:00.49
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/3.30.0/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-w5c9zw"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-w5c9zw"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-w5c9zw'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_6f76f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:18:56.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w5c9zw\\cmTC_6f76f.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_6f76f.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w5c9zw\\Debug\\".
+          Creating directory "cmTC_6f76f.dir\\Debug\\cmTC_6f76f.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_6f76f.dir\\Debug\\cmTC_6f76f.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_6f76f.dir\\Debug\\cmTC_6f76f.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_6f76f.dir\\Debug\\\\" /Fd"cmTC_6f76f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.30\\Modules\\CMakeCCompilerABI.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_6f76f.dir\\Debug\\\\" /Fd"cmTC_6f76f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.30\\Modules\\CMakeCCompilerABI.c"
+          CMakeCCompilerABI.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w5c9zw\\Debug\\cmTC_6f76f.exe" /INCREMENTAL /ILK:"cmTC_6f76f.dir\\Debug\\cmTC_6f76f.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-w5c9zw/Debug/cmTC_6f76f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-w5c9zw/Debug/cmTC_6f76f.lib" /MACHINE:X64  /machine:x64 cmTC_6f76f.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_6f76f.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w5c9zw\\Debug\\cmTC_6f76f.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_6f76f.dir\\Debug\\cmTC_6f76f.tlog\\unsuccessfulbuild".
+          Touching "cmTC_6f76f.dir\\Debug\\cmTC_6f76f.tlog\\cmTC_6f76f.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w5c9zw\\cmTC_6f76f.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.49
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'C': C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Running the C compiler's linker: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.39.33521.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-af7yyr"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-af7yyr"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-af7yyr'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_a478f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:18:56.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-af7yyr\\cmTC_a478f.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_a478f.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-af7yyr\\Debug\\".
+          Creating directory "cmTC_a478f.dir\\Debug\\cmTC_a478f.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_a478f.dir\\Debug\\cmTC_a478f.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_a478f.dir\\Debug\\cmTC_a478f.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_a478f.dir\\Debug\\\\" /Fd"cmTC_a478f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.30\\Modules\\CMakeCXXCompilerABI.cpp"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_a478f.dir\\Debug\\\\" /Fd"cmTC_a478f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.30\\Modules\\CMakeCXXCompilerABI.cpp"
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-af7yyr\\Debug\\cmTC_a478f.exe" /INCREMENTAL /ILK:"cmTC_a478f.dir\\Debug\\cmTC_a478f.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-af7yyr/Debug/cmTC_a478f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-af7yyr/Debug/cmTC_a478f.lib" /MACHINE:X64  /machine:x64 cmTC_a478f.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_a478f.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-af7yyr\\Debug\\cmTC_a478f.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_a478f.dir\\Debug\\cmTC_a478f.tlog\\unsuccessfulbuild".
+          Touching "cmTC_a478f.dir\\Debug\\cmTC_a478f.tlog\\cmTC_a478f.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-af7yyr\\cmTC_a478f.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.51
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (PROJECT)"
+    message: |
+      Running the CXX compiler's linker: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.39.33521.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckTypeSize.cmake:251 (check_include_file)"
+      - "CMakeLists.txt:224 (CHECK_TYPE_SIZE)"
+    checks:
+      - "Looking for sys/types.h"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-6lekf2"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-6lekf2"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "HAVE_SYS_TYPES_H"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-6lekf2'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_ea1cc.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:18:58.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\cmTC_ea1cc.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_ea1cc.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\Debug\\".
+          Creating directory "cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_ea1cc.dir\\Debug\\\\" /Fd"cmTC_ea1cc.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\CheckIncludeFile.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_ea1cc.dir\\Debug\\\\" /Fd"cmTC_ea1cc.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\CheckIncludeFile.c"
+          CheckIncludeFile.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\Debug\\cmTC_ea1cc.exe" /INCREMENTAL /ILK:"cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-6lekf2/Debug/cmTC_ea1cc.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-6lekf2/Debug/cmTC_ea1cc.lib" /MACHINE:X64  /machine:x64 cmTC_ea1cc.dir\\Debug\\CheckIncludeFile.obj
+          cmTC_ea1cc.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\Debug\\cmTC_ea1cc.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.tlog\\unsuccessfulbuild".
+          Touching "cmTC_ea1cc.dir\\Debug\\cmTC_ea1cc.tlog\\cmTC_ea1cc.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lekf2\\cmTC_ea1cc.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.52
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckTypeSize.cmake:252 (check_include_file)"
+      - "CMakeLists.txt:224 (CHECK_TYPE_SIZE)"
+    checks:
+      - "Looking for stdint.h"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-zesc4p"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-zesc4p"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "HAVE_STDINT_H"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-zesc4p'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_caaf0.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:18:58.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\cmTC_caaf0.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_caaf0.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\Debug\\".
+          Creating directory "cmTC_caaf0.dir\\Debug\\cmTC_caaf0.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_caaf0.dir\\Debug\\cmTC_caaf0.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_caaf0.dir\\Debug\\cmTC_caaf0.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_caaf0.dir\\Debug\\\\" /Fd"cmTC_caaf0.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\CheckIncludeFile.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_caaf0.dir\\Debug\\\\" /Fd"cmTC_caaf0.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\CheckIncludeFile.c"
+          CheckIncludeFile.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\Debug\\cmTC_caaf0.exe" /INCREMENTAL /ILK:"cmTC_caaf0.dir\\Debug\\cmTC_caaf0.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-zesc4p/Debug/cmTC_caaf0.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-zesc4p/Debug/cmTC_caaf0.lib" /MACHINE:X64  /machine:x64 cmTC_caaf0.dir\\Debug\\CheckIncludeFile.obj
+          cmTC_caaf0.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\Debug\\cmTC_caaf0.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_caaf0.dir\\Debug\\cmTC_caaf0.tlog\\unsuccessfulbuild".
+          Touching "cmTC_caaf0.dir\\Debug\\cmTC_caaf0.tlog\\cmTC_caaf0.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zesc4p\\cmTC_caaf0.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.51
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckTypeSize.cmake:253 (check_include_file)"
+      - "CMakeLists.txt:224 (CHECK_TYPE_SIZE)"
+    checks:
+      - "Looking for stddef.h"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-ev1cgo"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-ev1cgo"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "HAVE_STDDEF_H"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-ev1cgo'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_5f9fd.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:18:59.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\cmTC_5f9fd.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_5f9fd.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\Debug\\".
+          Creating directory "cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_5f9fd.dir\\Debug\\\\" /Fd"cmTC_5f9fd.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\CheckIncludeFile.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_5f9fd.dir\\Debug\\\\" /Fd"cmTC_5f9fd.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\CheckIncludeFile.c"
+          CheckIncludeFile.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\Debug\\cmTC_5f9fd.exe" /INCREMENTAL /ILK:"cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-ev1cgo/Debug/cmTC_5f9fd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-ev1cgo/Debug/cmTC_5f9fd.lib" /MACHINE:X64  /machine:x64 cmTC_5f9fd.dir\\Debug\\CheckIncludeFile.obj
+          cmTC_5f9fd.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\Debug\\cmTC_5f9fd.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.tlog\\unsuccessfulbuild".
+          Touching "cmTC_5f9fd.dir\\Debug\\cmTC_5f9fd.tlog\\cmTC_5f9fd.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ev1cgo\\cmTC_5f9fd.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.54
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "CMakeLists.txt:224 (CHECK_TYPE_SIZE)"
+    checks:
+      - "Check size of long long"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-dfy8z2"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-dfy8z2"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "HAVE_LONG_LONG"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-dfy8z2'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_709c5.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:19:00.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\cmTC_709c5.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_709c5.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\Debug\\".
+          Creating directory "cmTC_709c5.dir\\Debug\\cmTC_709c5.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_709c5.dir\\Debug\\cmTC_709c5.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_709c5.dir\\Debug\\cmTC_709c5.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_709c5.dir\\Debug\\\\" /Fd"cmTC_709c5.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\LONG_LONG.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_709c5.dir\\Debug\\\\" /Fd"cmTC_709c5.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\LONG_LONG.c"
+          LONG_LONG.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\Debug\\cmTC_709c5.exe" /INCREMENTAL /ILK:"cmTC_709c5.dir\\Debug\\cmTC_709c5.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-dfy8z2/Debug/cmTC_709c5.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-dfy8z2/Debug/cmTC_709c5.lib" /MACHINE:X64  /machine:x64 cmTC_709c5.dir\\Debug\\LONG_LONG.obj
+          cmTC_709c5.vcxproj -> E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\Debug\\cmTC_709c5.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_709c5.dir\\Debug\\cmTC_709c5.tlog\\unsuccessfulbuild".
+          Touching "cmTC_709c5.dir\\Debug\\cmTC_709c5.tlog\\cmTC_709c5.lastbuildstate".
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-dfy8z2\\cmTC_709c5.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.50
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "CMakeLists.txt:227 (INCLUDE)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-kq65rk"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-kq65rk"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-kq65rk'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_e7b73.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:19:01.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\cmTC_e7b73.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_e7b73.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\Debug\\".
+          Creating directory "cmTC_e7b73.dir\\Debug\\cmTC_e7b73.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_e7b73.dir\\Debug\\cmTC_e7b73.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_e7b73.dir\\Debug\\cmTC_e7b73.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_e7b73.dir\\Debug\\\\" /Fd"cmTC_e7b73.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\src.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_e7b73.dir\\Debug\\\\" /Fd"cmTC_e7b73.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\src.c"
+          src.c
+        E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\cmTC_e7b73.vcxproj]
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\cmTC_e7b73.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\cmTC_e7b73.vcxproj" (default target) (1) ->
+        (ClCompile target) -> 
+          E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kq65rk\\cmTC_e7b73.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.32
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:175 (_threads_check_lib)"
+      - "CMakeLists.txt:227 (INCLUDE)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-xvdvlf"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-xvdvlf"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-xvdvlf'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_93ad4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:19:01.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\cmTC_93ad4.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_93ad4.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\Debug\\".
+          Creating directory "cmTC_93ad4.dir\\Debug\\cmTC_93ad4.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_93ad4.dir\\Debug\\cmTC_93ad4.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_93ad4.dir\\Debug\\cmTC_93ad4.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_93ad4.dir\\Debug\\\\" /Fd"cmTC_93ad4.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_93ad4.dir\\Debug\\\\" /Fd"cmTC_93ad4.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\Debug\\cmTC_93ad4.exe" /INCREMENTAL /ILK:"cmTC_93ad4.dir\\Debug\\cmTC_93ad4.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-xvdvlf/Debug/cmTC_93ad4.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-xvdvlf/Debug/cmTC_93ad4.lib" /MACHINE:X64  /machine:x64 cmTC_93ad4.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\cmTC_93ad4.vcxproj]
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\cmTC_93ad4.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\cmTC_93ad4.vcxproj" (default target) (1) ->
+        (Link target) -> 
+          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xvdvlf\\cmTC_93ad4.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.36
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake:176 (_threads_check_lib)"
+      - "CMakeLists.txt:227 (INCLUDE)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-7onavu"
+      binary: "E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-7onavu"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_MODULE_PATH: "C:/Users/Morteza/Downloads/lemon-1.3.1/lemon-1.3.1/cmake"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-7onavu'
+        
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_44ef8.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.9.5+33de0b227 for .NET Framework
+        Build started 17/07/2024 11:19:02.
+        
+        Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\cmTC_44ef8.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Creating directory "cmTC_44ef8.dir\\Debug\\".
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\Debug\\".
+          Creating directory "cmTC_44ef8.dir\\Debug\\cmTC_44ef8.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_44ef8.dir\\Debug\\cmTC_44ef8.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_44ef8.dir\\Debug\\cmTC_44ef8.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_44ef8.dir\\Debug\\\\" /Fd"cmTC_44ef8.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33521 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_44ef8.dir\\Debug\\\\" /Fd"cmTC_44ef8.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\Debug\\cmTC_44ef8.exe" /INCREMENTAL /ILK:"cmTC_44ef8.dir\\Debug\\cmTC_44ef8.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-7onavu/Debug/cmTC_44ef8.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/OneDriveSkema/OneDrive - SKEMA Business School/Data/Research/1- OnGoing/Graph - Balanced Tree/Heavest Balanced Tree/TIF/build/CMakeFiles/CMakeScratch/TryCompile-7onavu/Debug/cmTC_44ef8.lib" /MACHINE:X64  /machine:x64 cmTC_44ef8.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\cmTC_44ef8.vcxproj]
+        Done Building Project "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\cmTC_44ef8.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\cmTC_44ef8.vcxproj" (default target) (1) ->
+        (Link target) -> 
+          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [E:\\OneDriveSkema\\OneDrive - SKEMA Business School\\Data\\Research\\1- OnGoing\\Graph - Balanced Tree\\Heavest Balanced Tree\\TIF\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7onavu\\cmTC_44ef8.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.37
+        
+      exitCode: 1
+...
