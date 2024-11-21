@@ -113,7 +113,7 @@ void CG::AddVar() {
 		Knapsack[0].setLinearCoef(Xvar, -1);
 		
 		for (int v = 0; v < g->num_vertices; v++) {
-			if (checkbinSingle(g->trees[i]->bin_vertices,v)) {				
+			if (checkbin(g->trees[i]->bin_vertices,v)) {				
 				Cover[v].setLinearCoef(Xvar, 1);				
 			}
 			else {				

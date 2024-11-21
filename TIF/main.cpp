@@ -28,7 +28,7 @@ enum RunType {
 void main()
 {
 
-    RunType runType = RunType::t_CUT;
+    RunType runType = RunType::t_CG;
 
     initBinary();
 
@@ -42,9 +42,9 @@ void main()
 
     char str[10000];
     // loop over parameters and print the instance in a string
-    for (int i = 1; i < 4; i++) {
+    for (int i = 2; i < 4; i++) {
         for (int j = 0; j < 3; j++) { 
-            for (int l = 0; l < 4; l++) {
+            for (int l = 1; l < 4; l++) {
 
                 output = fopen("output.txt", "a+");
 
@@ -92,7 +92,7 @@ void main()
                 }
                 
                 if (runType == RunType::t_CG) {
-                    g->generateTrees();
+                    g->generateSelectTrees();
                     CG* model = (new CG(g, false, false))
                         ->PrintModel()
                         ->Run();
@@ -100,6 +100,7 @@ void main()
                 }
 
                 if (runType == RunType::t_SETCOVER) {
+                    g->generateTrees();
 					SetCoverF* model = (new SetCoverF(g, false, false))				
                         //->PrintModel()
 						->Run();

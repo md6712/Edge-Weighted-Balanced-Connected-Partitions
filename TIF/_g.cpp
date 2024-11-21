@@ -134,6 +134,15 @@ _g::~_g()
 
 	// deallocate memory for the colors
 	delete[] v_colors;
+
+	// deallocate memory for the trees
+	for (int i = 0; i < trees.size(); i++) {
+		delete trees[i];
+	}
+	trees.clear();
+
+	// deallocate memory for the digraph
+	dg.clear();
 }
 
 void _g::readGraph()
@@ -732,6 +741,10 @@ void _g::generateTrees() {
 
 	// allocate memory for the vertices
 	int* vertices = new int[num_vertices];
+
+	// binary number for the vertices
+	uint32_t* bin_vertices = new uint32_t[binaryArrlength(this->num_vertices)];
+	memset(bin_vertices, 0, sizeof(uint32_t) * binaryArrlength(this->num_vertices));
 	
 	// compute the maximum number of subsets
 	long maxBinNum = pow(2, num_vertices) - 1;
@@ -745,18 +758,19 @@ void _g::generateTrees() {
 
 	// loop over all subsets of vertices and generate vertices vector
 	for (uint32_t i = 1; i <= maxBinNum; i++) {
+		memset(bin_vertices, 0, sizeof(uint32_t) * binaryArrlength(this->num_vertices));
 		int count = 0;
 
 		// check what vertices are in the subset
 		for (int j = 0; j < num_vertices; j++) {
 			if (checkbinSingle(i, j)) {
 				vertices[count++] = j;
+				addbin(bin_vertices, j);
 			}
 		}
 
-
 		// create a minimum spanning tree 
-		_tree* tree = new _tree(vertices, count, i, this);
+		_tree* tree = new _tree(vertices, count, bin_vertices, this);
 		if (tree->num_vertices >= 2) {
 			tree->computeMST();
 		}
@@ -778,7 +792,88 @@ void _g::generateTrees() {
 		}
 	}
 
+	// delete local arrays
+	delete[] vertices;
+	delete[] bin_vertices;
+
 	// print the number of trees
 	std::cout << "Number of trees: " << trees.size() << std::endl;	
 }
 
+// generate select trees
+void _g::generateSelectTrees() {
+
+	// check if num_vertices is less than 32
+	if (num_vertices > 32) {
+		printf("Number of vertices is greater than 32\n");
+		throw ("Number of vertices is greater than 32\n");
+		return;
+	}
+
+	// allocate memory for the vertices
+	int* vertices = new int[num_vertices];
+
+	// binary number for the vertices
+	uint32_t* bin_vertices = new uint32_t[binaryArrlength(this->num_vertices)];
+
+	// compute the maximum number of subsets
+	long maxBinNum = pow(2, num_vertices) - 1;
+
+	// tree counter
+	int treeCounter = 0;
+
+
+	//create all singlton trees 
+	for (int i = 0; i < num_vertices; i++) {
+		memset(bin_vertices, 0, sizeof(uint32_t) * binaryArrlength(this->num_vertices));
+		addbin(bin_vertices, i);
+		// &i treat the single number as an array of size 1
+		// 1 << i is the binary number for the vertex i		
+
+		_tree* tree = new _tree(&i , 1, bin_vertices, this);
+		//tree->singltonTree(i);
+		trees.push_back(tree);
+		treeCounter++;
+	}
+
+
+	// reset bin_vertices
+	memset(bin_vertices, 0, sizeof(uint32_t) * binaryArrlength(this->num_vertices));
+
+	// create a tree including all vertices
+	for (int v = 0; v < num_vertices; v++) {
+		vertices[v] = v;
+		addbin(bin_vertices, v);
+	}
+	_tree* tree = new _tree(vertices, num_vertices, bin_vertices, this);
+
+	tree->computeMST();	
+
+	if (tree->isSpanningTree) {
+		tree->printTree();
+		tree->splitIntoKTrees(this->num_trees);
+		trees.push_back(tree);
+		treeCounter++;
+	}
+	else {
+		delete tree;
+	}
+
+	// loop for 100 iteration
+	for (int itr = 0; itr < 100; itr++) {
+
+
+
+
+
+	}
+
+
+	// delete local arrays
+	delete[] vertices;
+	delete[] bin_vertices;
+
+
+	// print the number of trees
+	std::cout << "Number of trees: " << trees.size() << std::endl;
+}

@@ -110,5 +110,6 @@ class _g
 
 		// generate trees
 		void generateTrees();
+		void generateSelectTrees();
 };
 
