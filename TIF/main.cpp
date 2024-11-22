@@ -28,7 +28,7 @@ enum RunType {
 void main()
 {
 
-    RunType runType = RunType::t_CG;
+    RunType runType = RunType::t_CUT;
 
     initBinary();
 
