@@ -55,18 +55,18 @@ Cplex* Cplex::Run() {
 	if (cplex.solve()) {
 		if (cplex.getStatus() == IloAlgorithm::Optimal)
 		{
-			instance->_gap = 0;
-			instance->_opt = (double)cplex.getObjValue();
+			gap = 0;
+			opt = (double)cplex.getObjValue();
 		}
 		else {
-			instance->_gap = (double)cplex.getMIPRelativeGap();
-			instance->_opt = (double)cplex.getObjValue();
+			gap = (double)cplex.getMIPRelativeGap();
+			opt = (double)cplex.getObjValue();
 		}
 	}
 	else {
 		if (cplex.getStatus() == IloAlgorithm::Infeasible) {
-			instance->_gap = -1;
-			instance->_opt = -1;
+			gap = -1;
+			opt = -1;
 			printf("\nInfeasible");
 		}
 	}

@@ -33,6 +33,9 @@ SetCoverF* SetCoverF::Run() {
 
 	Cplex::Run();
 
+	instance->_opt = opt;
+	instance->_gap = gap;
+
 	//SaveOpt();
 	//instance->PrintOptEdges();
 
@@ -75,7 +78,7 @@ void SetCoverF::DefVarX() {
 	int num_trees = g->trees.size();
 
 	// define the variable x
-	x = IloNumVarArray(env, num_trees, 0, 1, ILOINT);
+	x = IloNumVarArray(env, num_trees, 0, 1, ILOFLOAT);
 	for (int T = 0; T < num_trees; T++) {
 		// name 
 		sprintf(name, "x_%d", T);

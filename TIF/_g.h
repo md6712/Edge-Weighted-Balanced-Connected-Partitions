@@ -56,9 +56,10 @@ class _g
 
 		bool** cycles;
 		bool* visited;
+		bool* edge_visited;
 		int num_cycles;
 		int cycle_start_vertex;
-		bool in_cycle;
+		bool in_cycle;		
 
 		std::vector <_tree *> trees;
 
@@ -75,6 +76,12 @@ class _g
 		int num_seperators;	
 		color* v_colors;
 
+
+		int UB = INT32_MAX;  // upper bound on the size of maximum tree in the forest
+		int LB = 0; // lower bound on the size of smallest tree in the forest
+		int MST_weight = 0; // weight of the minimum spanning tree
+		
+
 		double _gap;
 		double _opt;
 		_g(int num_vertices, int num_edges, int num_trees);
@@ -90,12 +97,12 @@ class _g
 		void outputOPTEdges();
 
 		char* getFilename();
-		bool CheckCycles();
+		
+		bool CheckCyclesInOptEdges();
+		bool CheckCyclesInOptEdgesRec(int i, int ep, int v);
 
-		bool CheckCyclesRec(int i, int ep, int v);
 		void PrintCycles();
 		void PrintOptEdges(bool printWeight = false);
-		void printOPTEdges();
 
 		_g* SortEdges();
 
@@ -111,5 +118,8 @@ class _g
 		// generate trees
 		void generateTrees();
 		void generateSelectTrees();
+
+		void recomputeLB();
+		void computeUB();
 };
 

@@ -87,7 +87,7 @@ ILOLAZYCONSTRAINTCALLBACK1(callback, CutF*, cutF) {
 		}
 
 		// check if the solution has cycles
-		if (cutF->instance->CheckCycles())
+		if (cutF->instance->CheckCyclesInOptEdges())
 		{
 
 			// print the cycles
@@ -481,6 +481,7 @@ void CutF::AddObj() {
 	}
 
 	model.add(IloMinimize(env, exprObj));
+	exprObj.end();
 }
 
 // addObj without sorting the trees

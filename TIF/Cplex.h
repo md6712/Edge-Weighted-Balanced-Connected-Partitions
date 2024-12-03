@@ -17,6 +17,9 @@ class Cplex
 {
 public:
 
+	double gap = 0.01;
+	double opt = 0;
+
 	bool integer = true;
 	bool printCycles;
 	bool printCuts;

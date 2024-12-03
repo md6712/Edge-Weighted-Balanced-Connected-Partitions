@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include<direct.h>
 #include "binary.h"
+#include "AVLTree.h"
 
 #include <lemon/edmonds_karp.h>
 
@@ -13,7 +14,7 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 {
 
 	// allocate memory for the edges
-	edges = new int[num_edges][3];
+	edges = new int[num_edges+ num_trees-1][3]; // we allow more edges in case if vertices have degree 0
 
 	// set the number of vertices and edges
 	this->num_vertices = num_vertices;
@@ -36,6 +37,9 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 
 	// allocate memory for the visited array
 	visited = new bool[num_vertices];
+
+	// allocate memory for the edge visited array
+	edge_visited = new bool[num_edges];
 
 	// set the filename
 	filename = new char[10000];
@@ -96,6 +100,7 @@ _g::~_g()
 
 	// deallocate memory for the visited array
 	delete[] visited;
+	delete [] edge_visited;
 
 	
 	// deallocate memory for the start edge tree
@@ -162,6 +167,13 @@ void _g::readGraph()
 		for (int i = 0; i < num_edges; i++) {		
 			fscanf(f, "%d %d %d", &edges[i][0], &edges[i][1], &edges[i][2]);
 
+			//without loss of generality, we assume that $u < v$ for each edge $(u,v) \in E$.
+			if (edges[i][0] > edges[i][1]) {
+				int temp = edges[i][0];
+				edges[i][0] = edges[i][1];
+				edges[i][1] = temp;
+			}
+
 			// add the arcs
 			arcs[i][0] = edges[i][0];
 			arcs[i][1] = edges[i][1];
@@ -181,6 +193,22 @@ void _g::readGraph()
 	}
 
 
+	// if there is a vertex with degree 0, add an edge to the last vertex	
+	for (int i = 0; i < num_vertices; i++) {
+		int degree = 0;
+		for (int e = 0; e < num_edges; e++) {
+			if (edges[e][0] == i || edges[e][1] == i) {
+				degree++;
+			}
+		}
+		if (degree == 0) {
+			edges[num_edges][0] = i;
+			edges[num_edges][1] = num_vertices - 1;
+			edges[num_edges][2] = LARGE_WEIGHT;
+			num_edges++;
+		}
+	}
+
 
 	
 }
@@ -189,15 +217,11 @@ void _g::printGraph()
 {
 	printf("Number of vertices: %d\n", num_vertices);
 	printf("Number of edges: %d\n", num_edges);
+	printf("Number of trees: %d\n", num_trees);
 	printf("Edges:\n");
 	for (int e = 0; e < num_edges; e++) {
-		printf("[%d] (%d %d %d)\n", e, edges[e][0], edges[e][1], edges[e][2]);
-	}
-
-	printf("\nTree:");
-	for (int e = 0; e < num_edges; e++) {
-		printf("(%d %d)", edges[e][0], edges[e][1]);
-	}
+		printf("[%2d] [%2d %2d]--%3d\n", e, edges[e][0], edges[e][1], edges[e][2]);
+	}	
 }
 
 void _g::setFilename()
@@ -276,7 +300,7 @@ void _g::outputOPTEdges() {
 
 
 // check if there are cycles in opt_edges
-bool _g::CheckCycles() {
+bool _g::CheckCyclesInOptEdges() {
 
 	// initialize cycle to false
 	bool cycle = false;
@@ -289,8 +313,11 @@ bool _g::CheckCycles() {
 	// initialize visited array
 	memset(visited, 0, sizeof(bool) * num_vertices);	
 
+	// initialize edge visited array
+	memset(edge_visited, 0, sizeof(bool) * num_edges);
+
 	// init number of cycles
-	num_cycles = 0;
+	num_cycles = 0;	
 
 	// loop over the trees
 	for (int i = 0; i < num_trees; i++) {
@@ -304,20 +331,36 @@ bool _g::CheckCycles() {
 		// initialize in_cycle to false;  we are not yet in a cycle
 		in_cycle = false;
 
-		// first edge of each tree
 		int ep = start_edge_tree[i];
-		
+	
+		while (true) {
+			// first edge of each tree			 
+			while (edge_visited[ep]){
+				ep++;
+				if ((i < num_trees - 1 && ep == start_edge_tree[i+1]) || ep >= num_opt_edges - 1) {					
+					break;
+				}				
+			}		
+
+			// leave the upper loop if we are at the end of the edges
+			if ((i < num_trees - 1 && ep == start_edge_tree[i + 1]) || ep >= num_opt_edges - 1) {
+				break;
+			}
+
+			// start from an edge in the tree and check recursively for cycles		
+			if (CheckCyclesInOptEdgesRec(i, ep, -1)) {
+				num_cycles++; // increment the number of cycles
+				cycle = true; // we have found a cycle
+				in_cycle = false; // we are no longer in a cycle // setting this to false is important as we want to find a new cycle
+				break;
+			}
+		}
 
 		// check if there is singleton tree
 		if (ep >= num_opt_edges - 1) {
-		 	break;  // there is a singleton tree
+			break;  // there is a singleton tree
 		}
 
-		// start from an edge in the tree and check recursively for cycles
-		if (CheckCyclesRec(i, ep,-1)) {
-			num_cycles++; // increment the number of cycles
-			cycle = true;
-		}
 	}	
 
 	// return true if a cycle is found and false otherwise
@@ -325,9 +368,12 @@ bool _g::CheckCycles() {
 }
 
 // recursive function to check for cycles in tree i 
-bool _g::CheckCyclesRec(int i, int ep, int v) {
+bool _g::CheckCyclesInOptEdgesRec(int i, int ep, int v) {
 	// compute e from ep
 	int e = opt_edges[ep];
+
+	// mark edge e as visited
+	edge_visited[ep] = true;
 
 	// compute the adjacent vertex
 	int v2 = (edges[e][0] == v) ? edges[e][1] : edges[e][0];
@@ -366,7 +412,7 @@ bool _g::CheckCyclesRec(int i, int ep, int v) {
 				
 				// check if the vertex is not the previous vertex
 				if (nv != v) {
-					cycle = CheckCyclesRec(i, ep2, nv);
+					cycle = CheckCyclesInOptEdgesRec(i, ep2, nv);
 
 					// if a cycle is found,  return true
 					if (cycle) {
@@ -403,6 +449,7 @@ void _g::PrintCycles() {
 	}
 	
 }
+
 
 // print the opt edges
 void _g::PrintOptEdges(bool printWeight) {
@@ -684,14 +731,7 @@ void _g::PrintMinSeperators() {
 }
 
 
-//print opt edges
-void _g::printOPTEdges() {	
-	for (int i = 0; i < num_trees; i++) {
-		for (int e = 0; e < num_vertices - num_trees; e++) {
-			printf("(%d %d)", edges[opt_edges[e]][0], edges[opt_edges[e]][1]);
-		}
-	}
-}
+
 
 
 void _g::setDiGraph() {
@@ -770,19 +810,21 @@ void _g::generateTrees() {
 		}
 
 		// create a minimum spanning tree 
-		_tree* tree = new _tree(vertices, count, bin_vertices, this);
+		_tree* tree = new _tree( this);
+		tree->CopyVertices(count, vertices, bin_vertices);
 		if (tree->num_vertices >= 2) {
-			tree->computeMST();
+			tree->ComputeMST();
 		}
 		else
 		{
-			tree->singltonTree(vertices[0]);
+			tree->SingltonTree(vertices[0]);
 		}
 
 		if (tree->isSpanningTree) {
 			trees.push_back(tree);			
-		/*	std::cout << treeCounter++ << ": ";
-			tree->printTree();*/
+			tree->RecomputeDegree();
+			std::cout << treeCounter++ << ": ";
+			tree->PrintTree();
 			/*if (treeCounter % 10000 == 0) {
 				std::cout << treeCounter << std::endl;
 			}*/
@@ -830,7 +872,8 @@ void _g::generateSelectTrees() {
 		// &i treat the single number as an array of size 1
 		// 1 << i is the binary number for the vertex i		
 
-		_tree* tree = new _tree(&i , 1, bin_vertices, this);
+		_tree* tree = new _tree(this);
+		tree->CopyVertices(1, &i, bin_vertices);
 		//tree->singltonTree(i);
 		trees.push_back(tree);
 		treeCounter++;
@@ -845,35 +888,155 @@ void _g::generateSelectTrees() {
 		vertices[v] = v;
 		addbin(bin_vertices, v);
 	}
-	_tree* tree = new _tree(vertices, num_vertices, bin_vertices, this);
+	_tree* tree = new _tree(this);
+	tree->CopyVertices(num_vertices, vertices, bin_vertices);
 
-	tree->computeMST();	
+	// set a bool vector of forbidden edges
+	bool* forbidden_edges = new bool[num_edges];
+	memset(forbidden_edges, 0, sizeof(bool) * num_edges);
 
-	if (tree->isSpanningTree) {
-		tree->printTree();
-		tree->splitIntoKTrees(this->num_trees);
-		trees.push_back(tree);
-		treeCounter++;
+	AVLTree* avl = new AVLTree();
+	
+	while (true) {
+		tree->ComputeMST(forbidden_edges);
+
+		_tree** trees_to_be_added = NULL;
+
+		bool new_tree_added = false; // check if we add a tree in this iteration
+
+		if (tree->num_forbidden_edges_in_mst <= num_trees - 1) {
+			trees_to_be_added = tree->SplitIntoKTrees(this->num_trees, forbidden_edges );
+			for (int i = 0; i < num_trees; i++) {
+				if (trees_to_be_added[i]->weight > UB) continue;
+				if (avl->search(trees_to_be_added[i]->bin_vertices[0]) == nullptr) {					
+					avl->insert(trees_to_be_added[i]->bin_vertices[0], trees_to_be_added[i]);
+					trees.push_back(trees_to_be_added[i]);
+					new_tree_added = true;
+
+					// print tree 
+
+					//trees_to_be_added[i]->PrintTree(); 
+
+					// update counter
+					treeCounter += 1;
+				}
+				else {
+					delete trees_to_be_added[i];
+				}
+			}
+
+			// delete local arrays
+			delete[] trees_to_be_added;
+
+			if (!new_tree_added) {
+				break;
+			}
+		}
+		else {
+			break;
+		}
+
+		// take the first edge of the tree that is not forbidden already			
+		int k =0; 
+		int e = tree->edges[k++];
+		while (forbidden_edges[e]) {
+			e = tree->edges[k++];
+		}
+
+		// print selected edge
+		//printf("Selected edge: [%2d %2d] -> %2d\n", edges[e][0], edges[e][1], edges[e][2]);
+
+		forbidden_edges[e] = true;
 	}
-	else {
-		delete tree;
-	}
-
-	// loop for 100 iteration
-	for (int itr = 0; itr < 100; itr++) {
+	
 
 
-
-
-
-	}
-
+	delete tree;
+	delete avl;
 
 	// delete local arrays
 	delete[] vertices;
 	delete[] bin_vertices;
-
+	delete[] forbidden_edges;
 
 	// print the number of trees
 	std::cout << "Number of trees: " << trees.size() << std::endl;
+}
+
+
+// recompute LB 
+void _g::recomputeLB() {
+	// set the lower bound to 0
+	LB = 0;
+
+	LB = MST_weight - (num_trees - 1) * UB;
+
+	for (int i = 0; i < num_trees-1; i++) {
+		LB -= edges[num_edges - i - 1][2];
+	}	
+
+	if (LB < 0) {
+		LB = 0;
+	}
+}
+
+// compute UB 
+void _g::computeUB() {
+	
+	// allocate memory for the vertices
+	int* vertices = new int[num_vertices];
+
+	// binary number for the vertices
+	uint32_t* bin_vertices = new uint32_t[binaryArrlength(this->num_vertices)];
+
+	for (int v = 0; v < num_vertices; v++) {
+		vertices[v] = v;
+		addbin(bin_vertices, v);
+	}
+	_tree* tree = new _tree(this);
+	tree->CopyVertices(num_vertices, vertices, bin_vertices);
+
+	// set a bool vector of forbidden edges
+	bool* forbidden_edges = new bool[num_edges];
+	memset(forbidden_edges, 0, sizeof(bool) * num_edges);
+	
+	// compute MST 
+	tree->ComputeMST(forbidden_edges);
+
+	// recompute degrees
+	tree->RecomputeDegree();
+
+	// save the weight of the MST
+	MST_weight = tree->weight;
+
+	// split the trees into k trees	
+	_tree** trees = tree->SplitIntoKTrees(this->num_trees, forbidden_edges);;
+
+	// set the upper bound
+	UB = 0;
+	for (int i = 0; i < num_trees; i++) {
+		if (trees[i]->weight > UB) 
+			UB = trees[i]->weight;
+	}
+
+	// print UB 
+	std::cout << "UB: " << UB << std::endl;
+
+	// recompute LB
+	recomputeLB();
+
+	// print LB
+	std::cout << "LB: " << LB << std::endl;
+
+	// delete local arrays
+	delete[] vertices;
+	delete[] bin_vertices;
+	delete[] forbidden_edges;
+	delete tree;
+
+	// delete trees
+	for (int i = 0; i < num_trees; i++) {
+		delete trees[i];
+	}
+	delete[] trees;
 }

@@ -15,6 +15,8 @@
 #include "ExF.h"
 #include "CG.h"
 
+#include "_tree.h"
+
 
 FILE* output;
 
@@ -25,10 +27,24 @@ enum RunType {
     t_CG = 4
 };
 
-void main()
-{
+void testTree(_g* instance) {
+    _tree* tree = new _tree(instance);
+    tree->AddEdge(0);
+    tree->AddEdge(1);
+    tree->AddEdge(2);
+    tree->AddEdge(3);
+    tree->AddEdge(3);
+    tree->AddEdge(4);
+	
 
-    RunType runType = RunType::t_CUT;
+    tree->PrintTree();
+	delete tree;
+}
+
+void main()
+{    
+
+    RunType runType = RunType::t_CG;
 
     initBinary();
 
@@ -42,8 +58,8 @@ void main()
 
     char str[10000];
     // loop over parameters and print the instance in a string
-    for (int i = 2; i < 4; i++) {
-        for (int j = 0; j < 3; j++) { 
+    for (int i = 1; i < 4; i++) {
+        for (int j = 1; j < 3; j++) { 
             for (int l = 1; l < 4; l++) {
 
                 output = fopen("output.txt", "a+");
@@ -59,6 +75,8 @@ void main()
                 // read the graph
                 g->readGraph();
 
+                //testTree(g);
+
                 // compute all subsets
                 //g->computeSubsets();             
 
@@ -67,9 +85,11 @@ void main()
 
                 g->setDiGraph();
 
-
                 // print the graph            
                 g->printGraph();
+
+                // compute the upper bound
+                g->computeUB();
 
                 // print min separators
                 //g->PrintMinSeperators();
@@ -92,10 +112,13 @@ void main()
                 }
                 
                 if (runType == RunType::t_CG) {
-                    g->generateSelectTrees();
+                    //g->generateTrees();
+
+                   g->generateSelectTrees();
                     CG* model = (new CG(g, false, false))
                         ->PrintModel()
-                        ->Run();
+                        ->Run()
+					    ->PrintSol();
                     delete model;
                 }
 
@@ -106,7 +129,6 @@ void main()
 						->Run();
                     delete model;
 				}
-
 
                 if (runType == RunType::t_EX) {
 					ExF* model = (new ExF(g, false, false))
@@ -119,11 +141,11 @@ void main()
                 timer.setEndTime();
 
                 // print the results
-                int opt = g->_opt;
+                double opt = g->_opt + FLT_EPSILON;
                 double gap = g->_gap;
                 double eplasedtime = timer.calcElaspedTime_sec();
 
-                sprintf_s(outputline, "\n%40s \t %d \t %d \t %d \t%d \t %4.2lf \t %4.2lf ", g->getFilename(), num_vertices, num_edges, num_trees, opt, gap, eplasedtime);
+                sprintf_s(outputline, "\n%40s \t %d \t %d \t %d \t%4.2lf \t %4.2lf \t %4.2lf ", g->getFilename(), num_vertices, num_edges, num_trees, opt, gap, eplasedtime);
                 fprintf_s(output, "%s", outputline);
                 printf("%s", outputline);   
 

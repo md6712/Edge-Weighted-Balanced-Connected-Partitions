@@ -1,5 +1,6 @@
 #pragma once
 #include "Cplex.h"
+#include "CGPrice.h"
 class CG :
     public Cplex
 {
@@ -10,12 +11,20 @@ class CG :
     IloNumVar z;
 
     // constraints 
-    IloRangeArray Knapsack;
+    IloRange Knapsack;
     IloRangeArray Cover;
     IloRangeArray Z;
 
+    // dual values for constraints
+    IloNum dualKnapsack;   // theta in the model
+    IloNumArray dualCover;      // eta in the model
+    IloNumArray dualZ;   	    // zeta in the model   
+
     IloObjective obj;
 
+
+    // pricing problem
+    CGPrice* pricing_problem;
 
     // run the model
     CG* Run();
@@ -34,7 +43,8 @@ class CG :
     void AddCons();
 
     // add variables 
-    void AddVar();
+    void AddVars();
+    void AddVar(int i);
 
     // add objective function
     void AddObj();

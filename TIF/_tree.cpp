@@ -8,35 +8,89 @@
 #include "_g.h"
 
 
-_tree::_tree(int* vertices, int num_vertices, uint32_t* bin_vertices, void *instance)
+_tree::_tree(void *instance)
 {
-	this->num_vertices = num_vertices;
+	// get num_vertices in the instance graph
+	int num_vertices = ((_g*)instance)->num_vertices;
+
+	// tree is empty 
+	this->num_vertices = 0;
+	this->weight = 0;
+
+	// the tree is not a spanning tree that means not all vertices in the graph is covered. an empty tree is also not spanning tree. 
+	this->isSpanningTree = false;
+
 	this->edges = new int[num_vertices - 1];
 	this->vertices = new int[num_vertices];
 	this->decomp = new int[num_vertices];
-	memcpy(this->vertices, vertices, sizeof(int)*num_vertices);	
-	this->bin_vertices = bin_vertices;
-	this->weight = 0;
+	this->degree = new int[num_vertices];	
+	this->bin_vertices = new uint32_t[binaryArrlength(num_vertices)];
+	memset(this->bin_vertices, 0, sizeof(uint32_t)*binaryArrlength(num_vertices));
+		
 	this->instance = instance;
-	this->isSpanningTree = false;
+	
+	// this is used for mst
+	this->num_forbidden_edges_in_mst = 0;
 }
+
+//memcpy(this->vertices, vertices, sizeof(int)* num_vertices);
+//this->bin_vertices = new uint32_t[binaryArrlength(((_g*)instance)->num_vertices)];
+//memcpy(this->bin_vertices, bin_vertices, sizeof(uint32_t)* binaryArrlength(((_g*)instance)->num_vertices));
 
 _tree::~_tree()
 {
 	delete[] this->edges;
 	delete[] this->vertices;
+	delete[] this->decomp;
+	delete[] this->bin_vertices;
+	delete[] this->degree;
 }
 
-void _tree::singltonTree(int vertex)
+// singleton tree
+void _tree::SingltonTree(int vertex)
 {
 	this->num_vertices = 1;
-	this->vertices = new int[1];
-	this->vertices[0] = vertex;	
+	this->vertices[0] = vertex;
 	this->weight = 0;
 	this->isSpanningTree = true;
 }
 
-void _tree::fixEdges(int* edges, int num_edges)
+// copy vertices
+void _tree::CopyVertices(uint32_t* bin_vertices)
+{	
+	memcpy(this->bin_vertices, bin_vertices, sizeof(uint32_t)*binaryArrlength(((_g*)instance)->num_vertices));
+
+	// for all vertices in the graph
+	for (int i = 0; i < ((_g*)instance)->num_vertices; i++)
+	{
+		// check if the vertex is in the tree
+		if (checkbin(bin_vertices, i))
+		{
+			this->vertices[this->num_vertices++] = i;
+		}
+	}
+}
+void _tree::CopyVertices(int num_vertices, int* vertices, uint32_t* bin_vertices)
+{
+	memcpy(this->bin_vertices, bin_vertices, sizeof(uint32_t)*binaryArrlength(((_g*)instance)->num_vertices));
+	memcpy(this->vertices, vertices, sizeof(int)*num_vertices);
+	this->num_vertices = num_vertices;
+}
+void _tree::CopyVertices(int num_vertices, int* vertices)
+{
+	// for all vertices in the graph
+	for (int i = 0; i < ((_g*)instance)->num_vertices; i++)
+	{
+		// check if the vertex is in the tree
+		if (checkbin(bin_vertices, i))
+		{
+			this->vertices[this->num_vertices++] = i;
+		}
+	}
+}
+
+// copy edges
+void _tree::CopyEdges(int num_edges, int* edges)
 {
 	this->edges = new int[num_edges];
 	memcpy(this->edges, edges, sizeof(int)*num_edges);
@@ -49,10 +103,22 @@ void _tree::fixEdges(int* edges, int num_edges)
 	}
 }
 
-// compute the minimum spanning tree
+// build graph by edges
+void _tree::InitTreeByEdges(int num_edges, int* edges) {
+		// get the instance graph
+	_g* g = (_g*)this->instance;
 
-void _tree::computeMST()
+	// for all edges, add them to tree
+	for (int e = 0; e < num_edges; e++) {
+		AddEdge(edges[e]);
+	}
+}
+
+// compute the minimum spanning tree
+void _tree::ComputeMST(bool *forbidden_edges)
 {
+	// set the number of forbidden sets in MST
+	num_forbidden_edges_in_mst = 0;
 
 	// get the original graph
 	_g* g = (_g*)this->instance;
@@ -81,10 +147,13 @@ void _tree::computeMST()
 	ListGraph::Edge* edges = new ListGraph::Edge[g->num_edges];
 	int edgeCount = 0;
 	for (int i = 0; i < g->num_edges; i++)
-	{
+	{			
+
+		// get the vertices of the edge
 		int u = g->edges[i][0];
 		int v = g->edges[i][1];
 
+		// get the node id
 		int nodeU = nodeOneToOneMap[u];
 		int nodeV = nodeOneToOneMap[v];
 
@@ -124,7 +193,13 @@ void _tree::computeMST()
 		for (int i = 0; i < edgeCount; i++)
 		{
 			int edgeId = edgeOneToOneMap[i];
-			edgeWeight[edges[i]] = g->edges[edgeId][2];
+			if (forbidden_edges != nullptr && forbidden_edges[edgeId]) {
+				edgeWeight[edges[i]] = LARGE_WEIGHT;
+			}
+			else {
+				edgeWeight[edges[i]] = g->edges[edgeId][2];
+			}
+			
 		}
 
 		// create a mst map
@@ -135,7 +210,10 @@ void _tree::computeMST()
 
 
 		// counter for the edges
-		int edgeCounter = 0;
+		num_edges = 0;
+
+		// weight of the tree
+		this->weight = 0;
 
 		// loop over the edges in mst and print the edges
 		for (ListGraph::EdgeIt e(graph); e != INVALID; ++e)
@@ -146,18 +224,23 @@ void _tree::computeMST()
 				int edgeId = edgeOneToOneMap[graph.id(e)];								
 
 				// add the edge to the tree
-				this->edges[edgeCounter] = edgeId;
+				this->edges[num_edges] = edgeId;
+
+				// check if e is forbidden 
+				if (forbidden_edges!= nullptr && forbidden_edges[edgeId]) {
+					num_forbidden_edges_in_mst++;
+				}
 				
 				// add the weight of the edge to the tree
 				this->weight += g->edges[edgeId][2];
 
 				// increment the edge counter
-				edgeCounter++;
+				num_edges++;
 			}
 		}
 
 		// check if the number of edges in the tree is equal to the number of vertices - 1
-		if (edgeCounter != this->num_vertices - 1)
+		if (num_edges != this->num_vertices - 1)
 		{
 			this->isSpanningTree = false;
 		}
@@ -178,8 +261,7 @@ void _tree::computeMST()
 	delete[] edgeOneToOneMap;
 }
 
-
-void _tree::printTree()
+void _tree::PrintTree()
 {
 
 	// get the instance graph
@@ -192,7 +274,7 @@ void _tree::printTree()
 	}	
 
 	std::cout << "\t Edges: ";
-	for (int i = 0; i < this->num_vertices - 1; i++)
+	for (int i = 0; i < this->num_edges; i++)
 	{
 		// get the edge
 		int edgeId = this->edges[i];
@@ -204,28 +286,51 @@ void _tree::printTree()
 		std::cout << "(" << u << "," << v << ")";
 	}
 
+	std::cout << "\t Degrees:"; 
+	for (int i = 0; i < this->num_vertices; i++)
+	{
+		std::cout << this->degree[i] << " ";
+	}
+
 	std::cout << "\t Weight: " << this->weight << std::endl;
 }
 
-
 // split into k trees; 
-_tree** _tree::splitIntoKTrees(int k) {
+_tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 
 	// get the instance graph
 	_g* g = (_g*)this->instance;
 
-	// sort the edges based on their weights
-	std::sort(this->edges, this->edges + (this->num_vertices - 1), [g](int a, int b) {
-		return g->edges[a][2] > g->edges[b][2];
-		});
-
 	// print edges 
 	for (int i = 0; i < this->num_vertices - 1; i++) {
+		int e = this->edges[i];
 		int u = g->edges[this->edges[i]][0];
 		int v = g->edges[this->edges[i]][1];
 		int w = g->edges[this->edges[i]][2];
-		std::cout << "Edge: " << u << " " << v << " " << w << std::endl;		
+		bool f = forbidden_edges[this->edges[i]];
+		//std::cout << "Edge: " << u << " " << v << " " << w;
+		//if (f) std::cout << " forbidden";	
+		//std::cout << std::endl;		
 	}
+
+	// sort the edges based on their weights
+	std::sort(this->edges, this->edges + (this->num_vertices - 1), [g, forbidden_edges](int a, int b) {
+		if (forbidden_edges != NULL)
+			return (g->edges[a][2] > g->edges[b][2] || forbidden_edges[a]);
+		else
+			return g->edges[a][2] > g->edges[b][2];
+		});				
+
+	// print edges 
+	/*for (int i = 0; i < this->num_vertices - 1; i++) {
+		int u = g->edges[this->edges[i]][0];
+		int v = g->edges[this->edges[i]][1];
+		int w = g->edges[this->edges[i]][2];
+		bool f = forbidden_edges[this->edges[i]];
+		std::cout << "Edge: " << u << " " << v << " " << w;
+		if (f) std::cout << " forbidden";	
+		std::cout << std::endl;		
+	}*/
 
 	// create a Matrix k-1 to n-k
 	int ** matrix = new int* [k - 1];
@@ -273,77 +378,110 @@ _tree** _tree::splitIntoKTrees(int k) {
 	}
 	
 	// compute the max forest weight
-	maxForestWeight = computeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices);
+	maxForestWeight = ComputeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices, forbidden_edges);
+
+	int minMaxForestWeight = maxForestWeight;	
 
 	while (true) {
 		// min max forest weight
-		int minMaxForestWeight = maxForestWeight;
 		int a_min = -1;
 		int d_min = -1;
 
-		for (int a = 0; a < k - 1; a++) {
+		int aa = 0;
+		for (int a = 0; a < this->num_vertices - 1; a++) {
 			if (!edge_to_be_removed[a]) continue;
-			int b = 0;
+			int dd = 0;
 			for (int d = 0; d < this->num_vertices - 1; d++) {
 				if (edge_to_be_removed[d]) continue;				
 
 				edge_to_be_removed[a] = false;
 				edge_to_be_removed[d] = true;
 
+				//// print a and d
+				//std::cout << "A: " << a << " D: " << d << std::endl;
+
+				//// print edges to be removed
+				//for (int i = 0; i < this->num_vertices - 1; i++) {
+				//	if (edge_to_be_removed[i]) {
+				//		int u = g->edges[this->edges[i]][0];
+				//		int v = g->edges[this->edges[i]][1];
+				//		int w = g->edges[this->edges[i]][2];
+				//		std::cout << "R Edge: " << u << " " << v << " " << w << std::endl;
+				//	}
+				//}
+
 				// remove the edge
-				matrix[a][b] = computeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices);
+				matrix[aa][dd] = ComputeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices, forbidden_edges);				
+
+				
+
+				/*std::cout << "Max Forest Weight: " << matrix[aa][dd] << std::endl;*/
 
 				// check if the weight is less than the min max forest weight
-				if (matrix[a][b] < minMaxForestWeight) {
-					minMaxForestWeight = matrix[a][b++];
+				if (matrix[aa][dd] < minMaxForestWeight) {
+					minMaxForestWeight = matrix[aa][dd];
 					a_min = a;
 					d_min = d;
 				}
 
-				else if (matrix[a][b] == minMaxForestWeight) {
+				else if (matrix[aa][dd] == minMaxForestWeight) {
 					if (!edge_selected[d]) {
 						a_min = a;
 						d_min = d;
 					}
 				}
 
-				b++;
+				
+				dd++;
 
 				//reverse
 				edge_to_be_removed[a] = true;
 				edge_to_be_removed[d] = false;
 			}
+			aa++;
 		}
 
-		if (a_min == -1) {
+
+		//// print the matrix
+		//for (int a = 0; a < k - 1; a++) {
+		//	for (int d = 0; d < this->num_vertices - k; d++) {
+		//		std::cout << matrix[a][d] << " ";
+		//	}
+		//	std::cout << std::endl;
+		//}
+
+		if (a_min == -1) {			
 			break;
 		}
 		else {
 			edge_to_be_removed[a_min] = false;
 			edge_to_be_removed[d_min] = true;
-
-			maxForestWeight = computeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices);
+			edge_selected[d_min] = true;			
 		}
+			
 	}
+	maxForestWeight = ComputeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices, forbidden_edges);
 
-	// print the matrix
-	for (int a = 0; a < k - 1; a++) {
-		for (int d = 0; d < this->num_vertices - k; d++) {
-			std::cout << matrix[a][d] << " ";
-		}
-		std::cout << std::endl;
+	// update graph upper bound: Min (UB, maxForestWeight)
+	if (maxForestWeight < g->UB) {
+		g->UB = maxForestWeight;
+		g->recomputeLB();
 	}
-
+	
 	// Now we create the trees and output them
-	// create an array of trees
-	_tree** trees = new _tree*[k];
+	// create an array of trees	
+
+	_tree** trees = new _tree * [k];
+
 	
 	// create the trees
 	for (int i = 0; i < k; i++) {
-		// create a new tree
-		trees[i] = new _tree(vertices[i], num_vertices[i], bin_vertices[i], this->instance);
-		trees[i]->fixEdges(edges[i], num_edges[i]);
-		trees[i]->printTree();
+		// print bin vertices
+		//if (num_edges[i] > 0) {
+			trees[i] = new _tree(this->instance);
+			trees[i]->InitTreeByEdges(num_edges[i], edges[i]);
+			//trees[i]->PrintTree();
+		//}
 	}
 
 	// delete arrays
@@ -367,23 +505,26 @@ _tree** _tree::splitIntoKTrees(int k) {
 	delete[] edge_selected;
 	delete[] tree_weights;
 
-
-
 	// return the trees
 	return trees;
 }
 
-int _tree::computeSpanningKForest(int k, void* instance, int** vertices, int** edges, bool* edge_to_be_removed, int* num_vertices, int* num_edges, int* tree_weights, uint32_t ** bin_vertices) {
+int _tree::ComputeSpanningKForest(int k, void* instance, int** vertices, int** edges, bool* edge_to_be_removed, int* num_vertices, int* num_edges, int* tree_weights, uint32_t ** bin_vertices, bool *forbidden_edges) {	
 
 	// get the instance graph
 	_g* g = (_g*)instance;
 
 	// traverse the tree to decompose the tree
-	traverseToDecompose(0, -1, 0, edge_to_be_removed);
+	TraverseToDecompose(0, -1, 0, 0, edge_to_be_removed);
 
 	memset(num_vertices, 0, sizeof(int) * k);
 	memset(num_edges, 0, sizeof(int) * k);
 	memset(tree_weights, 0, sizeof(int) * k);
+
+	// reset bin_vertices
+	for (int i = 0; i < k; i++) {
+		memset(bin_vertices[i], 0, sizeof(uint32_t) * binaryArrlength(this->num_vertices));
+	}
 
 	for (int v = 0; v < this->num_vertices; v++) {
 		int i = this->decomp[v];
@@ -393,13 +534,13 @@ int _tree::computeSpanningKForest(int k, void* instance, int** vertices, int** e
 	}
 
 	// compute the edges for each tree
-	for (int e = 0; e <= this->num_vertices - 2; e++) {
+	for (int e = 0; e < this->num_vertices - 1; e++) {
 		// get the edge
 		int edgeId = this->edges[e];
 
 		// get the vertices of the edge
 		int u = g->edges[edgeId][0];
-		int v = g->edges[edgeId][1];
+		int v = g->edges[edgeId][1];	
 
 		// get the tree of the vertices
 		int treeU = this->decomp[u];
@@ -410,7 +551,10 @@ int _tree::computeSpanningKForest(int k, void* instance, int** vertices, int** e
 			// add the edge to the tree
 			edges[treeU][num_edges[treeU]++] = edgeId;
 			// weight of tree
-			tree_weights[treeU] += g->edges[edgeId][2];
+			if (!forbidden_edges[edgeId])
+				tree_weights[treeU] += g->edges[edgeId][2];
+			else
+				tree_weights[treeU] += LARGE_WEIGHT;
 		}
 	}
 
@@ -422,27 +566,31 @@ int _tree::computeSpanningKForest(int k, void* instance, int** vertices, int** e
 			maxForestWeight = tree_weights[i];
 		}
 
-		std::cout << "Tree " << i << " Weight: " << tree_weights[i] << std::endl;
+		// print the tree
+		//std::cout << "Tree " << i << " Weight: " << tree_weights[i] << std::endl;
 	}
 
 	// print the maximum forest weight
-	std::cout << "Max Forest Weight: " << maxForestWeight << std::endl;
+	//std::cout << "Max Forest Weight: " << maxForestWeight << std::endl;
 
 	return maxForestWeight;
 }
 
 // traverse to decompose
-void _tree::traverseToDecompose(int vertex, int prev_vertex, int i, bool* edge_to_be_removed) {
+int _tree::TraverseToDecompose(int vertex, int prev_vertex, int i, int largest_i,  bool* edge_to_be_removed) {
 	// get the instance graph
 	_g* g = (_g*)this->instance;
 
 	// choose the vertex to tree i
 	this->decomp[vertex] = i;
 
-	//// print decompsition	
+	// print decompsition	
 	//std::cout << "Vertex: " << vertex << " Tree: " << i << std::endl;
 
 	int connector; // the vertex to connect to
+
+	int new_tree_vertex[4]; // the vertex to create a new tree
+	int new_tree_vertex_count = 0;		
 
 	// check all edges
 	for (int e = 0; e < num_vertices - 1; e++) {
@@ -471,15 +619,203 @@ void _tree::traverseToDecompose(int vertex, int prev_vertex, int i, bool* edge_t
 			// if edge is to be excluded
 			if (edge_to_be_removed[e]) {
 				// create a new tree
-				traverseToDecompose(connector, vertex, i + 1, edge_to_be_removed);
+				new_tree_vertex[new_tree_vertex_count++] = connector;
 			}
 			else {
-				traverseToDecompose(connector, vertex, i, edge_to_be_removed);
+				largest_i = TraverseToDecompose(connector, vertex, i, largest_i, edge_to_be_removed);
+
+				// print connector vertex i largest i 
+				//std::cout << "Connector: " << connector << " Vertex: " << vertex << " i: " << i << " Largest i: " << largest_i << std::endl;
+
 			}
 
 		}
 
 	}
+
+	// if a new tree is to be created
+	for (int s = 0; s < new_tree_vertex_count; s++) {
+		largest_i = TraverseToDecompose(new_tree_vertex[s], vertex, largest_i +1, largest_i+1, edge_to_be_removed);
+	}
+
+	return largest_i;
 }
 
+// add vertex
+void _tree::AddVertex(int vertex)
+{
+	// if vertex already is in the tree, increase the degree
+	if (checkbin(this->bin_vertices, vertex)) {
+		// find the vertex in the tree
+		for (int i = 0; i < this->num_vertices; i++) {
+			if (this->vertices[i] == vertex) {
+				degree[i]++;
+				break;
+			}
+		}
+		return;
+	}
+
+	// if vertex is new, add it to the tree
+	degree[this->num_vertices] = 1;
+	this->vertices[this->num_vertices++] = vertex;	
+	addbin(this->bin_vertices, vertex);	
+}
+
+// remove vertex
+void _tree::RemoveVertex(int vertex)
+{
+	// get the instance graph
+	_g* g = (_g*)this->instance;
+
+	// get the vertex index in the tree
+	int vertexInTree = -1;
+	for (int i = 0; i < num_vertices; i++) {
+		if (vertices[i] == vertex) {
+			vertexInTree = i;
+			break;
+		}
+	}
+
+	// if the vertex is not in the tree
+	if (vertexInTree == -1) {
+		return;
+	}
+
+	// if vertex will be still connected to the tree, just decrease the degree
+	if (degree[vertexInTree] > 1) {
+		degree[vertexInTree]--;
+		return;
+	}
+
+	// if degree becomes zero remove the vertex
+	for (int i = vertexInTree; i < num_vertices - 1; i++) {
+		vertices[i] = vertices[i + 1];
+		degree[i] = degree[i + 1];
+	}
+
+	// remove the vertex from the binary array
+	removebin(this->bin_vertices, vertex);
+
+	// decrement the number of vertices
+	num_vertices--;
+}
+
+// add edge
+void _tree::AddEdge(int edge)
+{	
+	if (IsEdgeInTree(edge)) {
+		return;
+	}
+
+	this->edges[num_edges++] = edge;
+	int u = ((_g*)this->instance)->edges[edge][0];
+	int v = ((_g*)this->instance)->edges[edge][1];
+
+	AddVertex(u);	
+	AddVertex(v);	
+
+	this->weight += ((_g*)this->instance)->edges[edge][2];
+}
+
+// remove edge
+void _tree::RemoveEdge(int edge)
+{
+	// get the instance graph
+	_g* g = (_g*)this->instance;
+
+	// get the vertices of the edge
+	int u = g->edges[edge][0];
+	int v = g->edges[edge][1];	
+
+	RemoveVertex(u);
+	RemoveVertex(v);
+
+	// remove the edge
+	for (int i = 0; i < num_vertices - 1; i++) {
+		if (edges[i] == edge) {
+			while (i < num_vertices - 1) {
+				edges[i] = edges[i + 1];
+				i++;
+			}		
+			break;
+		}
+	}
+}
+
+// check if the edge is in the tree
+bool _tree::IsEdgeInTree(int edge)
+{
+	for (int i = 0; i < num_vertices - 1; i++) {
+		if (edges[i] == edge) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// incident vertex
+int _tree::IncidentVertex(int edge)
+{
+	int u = ((_g*)this->instance)->edges[edge][0];
+	int v = ((_g*)this->instance)->edges[edge][1];
+
+	bool uInTree = false;
+	bool vInTree = false;
+
+	if (checkbin(this->bin_vertices, u)) {
+		uInTree = true;
+	}
+	if (checkbin(this->bin_vertices, v)) {
+		vInTree = true;
+	}
+	
+	if (uInTree && !vInTree) {
+		return u;
+	}
+	else if (!uInTree && vInTree) {
+		return v;
+	}
+	else {
+		return -1;
+	}
+
+}
+
+// compute the degree of the vertices in the tree
+void _tree::RecomputeDegree()
+{
+	// get the instance graph
+	_g* g = (_g*)this->instance;
+
+	// initialize the degree
+	memset(degree, 0, sizeof(int)*num_vertices);
+
+	// loop over the edges
+	for (int i = 0; i < num_edges; i++) {
+		// get the edge
+		int edgeId = edges[i];
+
+		// get the vertices of the edge
+		int u = g->edges[edgeId][0];
+		int v = g->edges[edgeId][1];
+
+		// get the vertices in the tree
+		int uInTree = -1;
+		int vInTree = -1;
+
+		for (int j = 0; j < num_vertices; j++) {
+			if (vertices[j] == u) {
+				uInTree = j;
+			}
+			if (vertices[j] == v) {
+				vInTree = j;
+			}
+		}
+
+		// increment the degree
+		degree[uInTree]++;
+		degree[vInTree]++;
+	}
+}
 
