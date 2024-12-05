@@ -105,16 +105,17 @@ CG* CG::Run() {
 			->SetPrintCuts(true)
 			->SetPrintCycles(true)*/
 			
-		//_tree* tree = pricing_problem->heuristic();
+		_tree* tree = pricing_problem->heuristic();
 
-		pricing_problem->Run();
-		_tree* tree = pricing_problem->GetTree(vertices, bin_vertices); // get the tree associated to the optimal solution
+		//pricing_problem->Run();
+		//_tree* tree = pricing_problem->GetTree(vertices, bin_vertices); // get the tree associated to the optimal solution
+
 		timer.setEndTime();
 
 		elapsedtimePricing += timer.calcElaspedTime_sec();
 
 		// print the solution
-		pricing_problem->PrintSol();
+		//pricing_problem->PrintSol();
 	
 
 		// print the tree

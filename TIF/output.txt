@@ -181,3 +181,5 @@
               instances//test10_18_3.txt 	 10 	 18 	 3 	62.36 	 0.00 	 2.36 
               instances//test10_18_4.txt 	 10 	 18 	 4 	48.82 	 0.00 	 1.62 
               instances//test10_18_5.txt 	 10 	 18 	 5 	44.92 	 0.00 	 1.37 
+              instances//test10_18_3.txt 	 10 	 18 	 3 	62.36 	 0.00 	 2.13 
+              instances//test10_13_3.txt 	 10 	 13 	 3 	123.29 	 0.00 	 1.14 

@@ -13,6 +13,8 @@
 
 #include "_tree.h"
 
+#include "_render.h"
+
 using namespace lemon;
 
 using Graph = ListDigraph;
@@ -28,6 +30,13 @@ enum color {
 	yellow
 };
 
+struct _coord {
+	double x;
+	double y;
+	double dx;
+	double dy;
+};
+
 
 
 class _g
@@ -38,6 +47,7 @@ class _g
 	public:	
 
 		Graph dg;
+		_render* render;
 
 		int num_vertices;
 		int num_edges;
@@ -49,6 +59,8 @@ class _g
 		int num_opt_edges;
 		int *start_edge_tree;
 
+		_coord* coords; // array to store the coordinates of the vertices
+
 		int** opt_vertices; // 2D array to store the vertices of the optimal solution - for each tree
 		int* num_opt_vertices;
 
@@ -59,7 +71,9 @@ class _g
 		bool* edge_visited;
 		int num_cycles;
 		int cycle_start_vertex;
-		bool in_cycle;		
+		bool in_cycle;
+
+		
 
 		std::vector <_tree *> trees;
 
@@ -121,5 +135,8 @@ class _g
 
 		void recomputeLB();
 		void computeUB();
+
+		void ForcedDirectedLayout(); // force directed layout algorithm to define the coordinates of the vertices in the graph
+		void DrawGraph(int* highlighted_edges = nullptr, int num_highlighted_edges = 0); // draw the graph
 };
 

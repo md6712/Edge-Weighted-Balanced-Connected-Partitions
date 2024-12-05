@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IL_STD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(CPLEX_STUDIO_DIR)\concert\include;$(Lib)\lemon-1.3.1;$(SolutionDir)TIF\build;$(CPLEX_STUDIO_DIR)\cplex\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CPLEX_STUDIO_DIR)\concert\include;$(Lib)\lemon-1.3.1;$(SolutionDir)TIF\build;$(SFML)\include;$(CPLEX_STUDIO_DIR)\cplex\include</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -118,8 +118,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\TIF\build\lemon\debug;$(CPLEX_STUDIO_DIR)\concert\lib\x64_windows_msvc14\stat_mda;$(CPLEX_STUDIO_DIR)\cplex\lib\x64_windows_msvc14\stat_mda</AdditionalLibraryDirectories>
-      <AdditionalDependencies>concert.lib;cplex$(CPLEX_VER).lib;ilocplex.lib;lemon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SFML)\lib\msvc;$(SolutionDir)\TIF\build\lemon\debug;$(CPLEX_STUDIO_DIR)\concert\lib\x64_windows_msvc14\stat_mda;$(CPLEX_STUDIO_DIR)\cplex\lib\x64_windows_msvc14\stat_mda</AdditionalLibraryDirectories>
+      <AdditionalDependencies>concert.lib;cplex$(CPLEX_VER).lib;ilocplex.lib;lemon.lib;csfml-graphics.lib
+;csfml-window.lib;
+csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -156,6 +158,7 @@
     <ClCompile Include="SetCoverF.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="_g.cpp" />
+    <ClCompile Include="_render.cpp" />
     <ClCompile Include="_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +175,7 @@
     <ClInclude Include="SetCoverF.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="_g.h" />
+    <ClInclude Include="_render.h" />
     <ClInclude Include="_tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

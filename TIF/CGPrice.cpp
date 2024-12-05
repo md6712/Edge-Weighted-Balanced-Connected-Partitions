@@ -431,7 +431,7 @@ _tree* CGPrice::heuristic() {
 				}
 
 				// get the vertex that is connecting the tree to the edge
-				int v = tree->IncidentVertex(e);
+				int v = tree->IncidentVertex(e); // this returns -1 if both vertices are in the tree -> a cycle is created
 				if (v == -1) {
 					continue;
 				}
@@ -443,6 +443,7 @@ _tree* CGPrice::heuristic() {
 				test_sum_zeta = sum_zeta + zeta[u];
 				test_sum_weight = sum_weight + this->instance->edges[e][2];
 
+				
 				new_reward = reward + eta[u] + (sum_weight * sum_zeta) - (test_sum_zeta)*test_sum_weight;
 
 				// check if the reward is better
@@ -463,12 +464,14 @@ _tree* CGPrice::heuristic() {
 			sum_weight = best_sum_weight;
 			sum_zeta = best_sum_zeta;
 			tree->weight = sum_weight;
-			//tree->printTree	();
+			tree->PrintTree	();
 			reward = max_reward;
 			
 			best_edge = -1;
 		}
 	}
+
+	instance->DrawGraph(tree->edges, tree->num_edges);
 
 	// local search
 
@@ -485,7 +488,7 @@ _tree* CGPrice::heuristic() {
 			}
 
 			// get the vertex that is connecting the tree to the edge
-			int v = tree->IncidentVertex(e);
+			int v = tree->GetAnyIncidentVertex(e);
 			if (v == -1) {
 				continue;
 			}
@@ -497,12 +500,16 @@ _tree* CGPrice::heuristic() {
 				}
 
 				// get the vertex that is connecting the tree to the edge
-				int vp = tree->IncidentVertex(ep);
+				int vp = tree->GetAnyIncidentVertex(e);
 				if (vp == -1) {
 					continue;
 				}				
 
-				
+				tree->RemoveEdge(e);
+				tree->AddEdge(ep);
+
+				instance->DrawGraph(tree->edges, tree->num_edges);
+
 				
 			}
 

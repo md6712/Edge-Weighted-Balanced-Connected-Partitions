@@ -74,7 +74,8 @@ class _tree
 	// determine 
 	bool IsSpanningTree(int edge);
 	bool IsEdgeInTree(int edge);
-	int IncidentVertex(int edge);
+	bool GetAnyIncidentVertex(int edge); // returns a vertex of the edge that is connected to the tree; if both vertices are connected, returns any of the two
+	int IncidentVertex(int edge);  // returns a vertext  of the edge that is connected to the tree if the edge is connected; returns -1 if both vertices are connected
 	bool IsConnected(); // is tree connected
 
 	// split the tree into k trees

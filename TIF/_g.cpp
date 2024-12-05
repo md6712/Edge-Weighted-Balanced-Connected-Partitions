@@ -13,6 +13,9 @@
 _g::_g(int num_vertices, int num_edges, int num_trees)
 {
 
+	// initialize the render object
+	render = new _render();
+
 	// allocate memory for the edges
 	edges = new int[num_edges+ num_trees-1][3]; // we allow more edges in case if vertices have degree 0
 
@@ -20,6 +23,9 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 	this->num_vertices = num_vertices;
 	this->num_edges = num_edges;	
 	this->num_trees = num_trees;
+
+	// allocate memory for the coordinates
+	coords = new _coord[num_vertices];
 
 	// compute the number of arcs
 	this->num_arcs = num_edges * 2 + num_vertices;
@@ -80,6 +86,9 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 
 _g::~_g()
 {
+	// deallocate memory for the render object
+	delete render;
+
 	// deallocate memory for the edges	
 	delete[] edges;	
 
@@ -88,6 +97,9 @@ _g::~_g()
 
 	// deallocate memory for the opt edges
 	delete[] opt_edges;
+
+	// deallocate memory for the coordinates
+	delete[] coords;
 
 	// deallocate memory for the filename
 	delete[] filename;
@@ -731,9 +743,6 @@ void _g::PrintMinSeperators() {
 }
 
 
-
-
-
 void _g::setDiGraph() {
 
 	// for each node, create a node 
@@ -1039,4 +1048,155 @@ void _g::computeUB() {
 		delete trees[i];
 	}
 	delete[] trees;
+}
+
+
+// forced directed layout 
+void  _g::ForcedDirectedLayout() {
+
+	// width and height of the window
+	int width = 1200;
+	int height = 800;
+
+	// srand for random number generation
+	srand(time(NULL));
+
+	// give random coordinations to the vertices
+	for (int i = 0; i < num_vertices; i++) {
+		coords[i].x = (rand() % width);
+		coords[i].y = (rand() % height);
+	}
+
+	// simulation constants 
+	double k = sqrt(width * height) / num_vertices; // optimal distance between vertices
+	double cooling_factor = 0.99; // cooling factor
+
+	// for each iteration
+	for (int itr = 0; itr < 1000; itr++) {
+		
+		// reset dx and dy
+		for (int i = 0; i < num_vertices; i++) {
+			coords[i].dx = 0;
+			coords[i].dy = 0;
+		}
+
+		// compute the repulsive forces
+		for (int i = 0; i < num_vertices; i++) {
+			for (int j = i + 1; j < num_vertices; j++) {
+				double dx = coords[i].x - coords[j].x;
+				double dy = coords[i].y - coords[j].y;
+				double d = sqrt(dx * dx + dy * dy);
+				if (d == 0) d = 0.0001;
+				double force = k * k / d;
+				coords[i].dx += force * dx / d;
+				coords[i].dy += force * dy / d;
+				coords[j].dx -= force * dx / d;
+				coords[j].dy -= force * dy / d;
+			}
+		}
+
+		// compute the attractive forces
+		for (int e = 0; e < num_edges; e++) {
+			int i = edges[e][0];
+			int j = edges[e][1];
+			double dx = coords[i].x - coords[j].x;
+			double dy = coords[i].y - coords[j].y;
+			double d = sqrt(dx * dx + dy * dy);
+			if (d == 0) d = 0.0001;
+			double force = d * d / k;
+			coords[i].dx -= force * dx / d;
+			coords[i].dy -= force * dy / d;
+			coords[j].dx += force * dx / d;
+			coords[j].dy += force * dy / d;
+		}
+
+
+		// update the coordinates
+		for (int i = 0; i < num_vertices; i++) {
+			coords[i].x += coords[i].dx * cooling_factor;
+			coords[i].y += coords[i].dy * cooling_factor;
+
+			// check if the coordinates are within the bounds
+			if (coords[i].x < 0) coords[i].x = 0;
+			if (coords[i].x > 1200) coords[i].x = 1200;
+			if (coords[i].y < 0) coords[i].y = 0;
+			if (coords[i].y > 800) coords[i].y = 800;
+		}
+
+		// reduce the temperature
+		cooling_factor *= 0.99;		
+
+		
+	}
+
+	// print the coordinates
+	for (int i = 0; i < num_vertices; i++) {
+		printf("Vertex %d: (%f, %f)\n", i, coords[i].x, coords[i].y);
+	}
+
+	// compute minimum x and y coordinates
+	int min_x = width, min_y = height;
+	int max_x = 0, max_y = 0;	
+	for (int v = 0; v < num_vertices; v++) {
+		min_x = (coords[v].x < min_x) ? coords[v].x : min_x;
+		min_y = (coords[v].y < min_y) ? coords[v].y : min_y;
+		max_x = (coords[v].x > max_x) ? coords[v].x : max_x;
+		max_y = (coords[v].y > max_y) ? coords[v].y : max_y;
+	}
+
+
+	// center the coordinates
+	int diff_x = width / 2 - (max_x + min_x) / 2; 
+	int diff_y = height / 2 - (max_y + min_y) / 2;
+
+	
+
+	// shift the coordinates
+	for (int v = 0; v < num_vertices; v++) {
+		coords[v].x -= diff_x;
+		coords[v].y -= diff_y;
+	}
+		
+	// print the coordinates
+	for (int i = 0; i < num_vertices; i++) {
+		printf("Vertex %d: (%f, %f)\n", i, coords[i].x, coords[i].y);
+	}
+
+}
+
+// draw the graph
+void _g::DrawGraph(int* highlighted_edges, int num_highlighted_edges) {
+
+	
+
+	for (int i = 0; i < num_edges; i++) {
+		int u = edges[i][0];
+		int v = edges[i][1];
+		double x1 = coords[u].x;
+		double y1 = coords[u].y;
+		double x2 = coords[v].x;
+		double y2 = coords[v].y;
+		render->addEdge(x1, y1, x2, y2, sfLinesStrip);
+	}
+
+	if (num_highlighted_edges > 0) {
+		for (int i = 0; i < num_highlighted_edges; i++) {
+			int u = edges[highlighted_edges[i]][0];
+			int v = edges[highlighted_edges[i]][1];
+			double x1 = coords[u].x;
+			double y1 = coords[u].y;
+			double x2 = coords[v].x;
+			double y2 = coords[v].y;
+			render->highlightEdge(x1, y1, x2, y2);
+		}
+		
+	}
+
+	for (int i = 0; i < num_vertices; i++) {
+		double x = coords[i].x;
+		double y = coords[i].y;
+		render->addNode(i, x, y);
+	}
+
+	render->draw();
 }

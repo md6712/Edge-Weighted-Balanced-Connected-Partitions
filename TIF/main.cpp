@@ -17,6 +17,7 @@
 
 #include "_tree.h"
 
+#include "_render.h"
 
 FILE* output;
 
@@ -44,6 +45,19 @@ void testTree(_g* instance) {
 void main()
 {    
 
+	//_render* render = new _render();    
+ //   
+ //   // add lines
+	//render->addEdge(100, 100, 200, 200);
+	//render->addEdge(200, 200, 300, 300);
+
+ //   // add tree nodes
+ //   render->addNode(1, 100, 100);
+ //   render->addNode(2, 200, 200);
+	//render->addNode(3, 300, 300);
+
+	//render->start();
+
     RunType runType = RunType::t_CG;
 
     initBinary();
@@ -59,7 +73,7 @@ void main()
     char str[10000];
     // loop over parameters and print the instance in a string
     for (int i = 1; i < 4; i++) {
-        for (int j = 1; j < 3; j++) { 
+        for (int j = 0; j < 3; j++) { 
             for (int l = 1; l < 4; l++) {
 
                 output = fopen("output.txt", "a+");
@@ -90,6 +104,11 @@ void main()
 
                 // compute the upper bound
                 g->computeUB();
+
+                // compute coords
+				g->ForcedDirectedLayout();
+
+                g->DrawGraph();
 
                 // print min separators
                 //g->PrintMinSeperators();

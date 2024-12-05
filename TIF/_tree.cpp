@@ -755,7 +755,8 @@ bool _tree::IsEdgeInTree(int edge)
 }
 
 // incident vertex
-int _tree::IncidentVertex(int edge)
+// this function returns that is connected to the tree. If both vertices are connected, it will return -1 
+int _tree::IncidentVertex(int edge) 
 {
 	int u = ((_g*)this->instance)->edges[edge][0];
 	int v = ((_g*)this->instance)->edges[edge][1];
@@ -775,9 +776,33 @@ int _tree::IncidentVertex(int edge)
 	}
 	else if (!uInTree && vInTree) {
 		return v;
-	}
+	}	
 	else {
 		return -1;
+	}
+
+}
+
+// any incident vertex 
+bool _tree::GetAnyIncidentVertex(int edge) {  // returns a vertex of the edge that is connected to the tree; if both vertices are connected, returns any of the two
+	int u = ((_g*)this->instance)->edges[edge][0];
+	int v = ((_g*)this->instance)->edges[edge][1];
+
+	bool uInTree = false;
+	bool vInTree = false;
+
+	if (checkbin(this->bin_vertices, u)) {
+		uInTree = true;
+	}
+	if (checkbin(this->bin_vertices, v)) {
+		vInTree = true;
+	}
+
+	if (uInTree || vInTree) {
+		return true;
+	}
+	else {
+		return false;
 	}
 
 }
