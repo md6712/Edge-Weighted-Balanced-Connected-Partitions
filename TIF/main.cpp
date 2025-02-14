@@ -13,7 +13,9 @@
 #include "SetCoverF.h"
 #include "CutF.h"
 #include "ExF.h"
+#include "FlowF.h"
 #include "CG.h"
+#include "bb.h"
 
 #include "_tree.h"
 
@@ -24,8 +26,11 @@ FILE* output;
 enum RunType {
     t_SETCOVER = 1,
     t_CUT = 2,
-    t_EX = 3,
-    t_CG = 4
+    t_DiCUT= 3,
+	t_FLOW = 4,
+    t_EX = 5,
+    t_CG = 6,
+    t_BB = 7
 };
 
 void testTree(_g* instance) {
@@ -41,6 +46,54 @@ void testTree(_g* instance) {
     tree->PrintTree();
 	delete tree;
 }
+
+
+// create an output file name: 
+char* outputFileName(RunType r) {
+
+    char* name = new char[180];
+	char* fullname = new char[180];
+	
+    
+        switch (r) {
+        case RunType::t_SETCOVER:            
+            sprintf_s(name, 180, "SetCover");
+            break;
+        case RunType::t_CUT:
+            sprintf_s(name, 180, "Cut");
+            break;
+		case RunType::t_DiCUT:
+			sprintf_s(name, 180, "DiCut");
+			break;
+        case RunType::t_FLOW:
+            sprintf_s(name, 180, "Flow");
+            break;
+        case RunType::t_EX:
+            sprintf_s(name, 180, "Ex");
+            break;
+        case RunType::t_CG:
+            sprintf_s(name, 180, "CG");
+            break;
+        case RunType::t_BB:
+            sprintf_s(name, 180, "BB");
+            break;
+        }
+    
+	// attach a timestamp
+	time_t now = time(0);
+	tm* ltm = localtime(&now);
+	char timestamp[80];
+	sprintf_s(timestamp, 180, "%d_%d_%d_%d_%d_%d", 1900 + ltm->tm_year, 1 + ltm->tm_mon, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);    
+	strcat_s(name, 180, timestamp);
+	strcat_s(name, 180, ".txt");
+
+	sprintf_s(fullname, 180, "output\\%s", name);
+	
+	delete name;
+
+	return fullname;
+}
+
 
 void main()
 {    
@@ -58,7 +111,8 @@ void main()
 
 	//render->start();
 
-    RunType runType = RunType::t_CG;
+    RunType runType = RunType::t_BB;
+    bool linear = false;
 
     initBinary();
 
@@ -71,12 +125,17 @@ void main()
     char outputline[1000];
 
     char str[10000];
-    // loop over parameters and print the instance in a string
-    for (int i = 1; i < 4; i++) {
-        for (int j = 0; j < 3; j++) { 
-            for (int l = 1; l < 4; l++) {
 
-                output = fopen("output.txt", "a+");
+	const char *outputname = outputFileName(runType);
+    output = fopen(outputname, "w");
+	fclose(output);
+
+    // loop over parameters and print the instance in a string
+    for (int i = 1; i < 2; i++) {
+        for (int j = 2; j < 3; j++) { 
+            for (int l = 0; l < 4; l++) {
+
+                output = fopen(outputname, "a+");
 
                 //compute number of edges 
                 int num_vertices = n[i];  // Number of vertices
@@ -97,6 +156,7 @@ void main()
                 // sort the edges
                 g->SortEdges();
 
+				// compute the directed graph
                 g->setDiGraph();
 
                 // print the graph            
@@ -105,9 +165,13 @@ void main()
                 // compute the upper bound
                 g->computeUB();
 
+				// compute the lower bound
+				g->recomputeLB();
+
                 // compute coords
 				g->ForcedDirectedLayout();
 
+				//  print the graph
                 g->DrawGraph();
 
                 // print min separators
@@ -122,39 +186,59 @@ void main()
 
 
                 if (runType == RunType::t_CUT) {
-                    CutF* model =  (new CutF(g, false))
+                    CutF* model =  (new CutF(g, false, linear))
                         //->ForceSol()
                         //->SetPrintCuts(true)
                         //->PrintModel()                    
                     ->Run();
                     delete model;
                 }
+
+				if (runType == RunType::t_DiCUT) {
+					CutF* model = (new CutF(g, false, linear))
+						->Run();
+					delete model;
+				}
                 
                 if (runType == RunType::t_CG) {
                     //g->generateTrees();
 
                    g->generateSelectTrees();
-                    CG* model = (new CG(g, false, false))
+                    CG* model = (new CG(g, false, linear))
                         ->PrintModel()
                         ->Run()
 					    ->PrintSol();
                     delete model;
                 }
 
+				if (runType == RunType::t_FLOW) {
+                    FlowF* model = (new FlowF(g, false, linear))
+                        //->PrintModel()                        
+                        ->Run()
+                        ->PrintSol();
+					delete model;
+				}
+
                 if (runType == RunType::t_SETCOVER) {
                     g->generateTrees();
-					SetCoverF* model = (new SetCoverF(g, false, false))				
-                        //->PrintModel()
+					SetCoverF* model = (new SetCoverF(g, false, linear))
+                        //->PrintModel()						
 						->Run();
                     delete model;
 				}
 
                 if (runType == RunType::t_EX) {
-					ExF* model = (new ExF(g, false, false))
+					ExF* model = (new ExF(g, false, linear))
 						//->PrintModel()
 						->Run();
                     delete model;
-				}                
+				}  
+
+                // enumeration based algorithms 
+                if (runType == RunType::t_BB) {
+                    bb* model = (new bb(g))
+                        ->Run();
+                }
 
                 //PartitionF* model = (new PartitionF(g, false))->Run();
                 timer.setEndTime();
@@ -164,7 +248,7 @@ void main()
                 double gap = g->_gap;
                 double eplasedtime = timer.calcElaspedTime_sec();
 
-                sprintf_s(outputline, "\n%40s \t %d \t %d \t %d \t%4.2lf \t %4.2lf \t %4.2lf ", g->getFilename(), num_vertices, num_edges, num_trees, opt, gap, eplasedtime);
+                sprintf_s(outputline, "\n%40s \t %d \t %d \t %d \t%d \t%d \t%4.2lf \t %4.2lf \t %4.2lf  \t %2d", g->getFilename(), num_vertices, num_edges, num_trees, g->LB, g->UB, opt, gap, eplasedtime, g->trees.size());
                 fprintf_s(output, "%s", outputline);
                 printf("%s", outputline);   
 

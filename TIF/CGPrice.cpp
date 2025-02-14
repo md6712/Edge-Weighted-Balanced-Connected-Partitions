@@ -89,6 +89,8 @@ CGPrice::CGPrice(_g* g, bool redirect):Cplex(g) {
 		// Add Constraints
 		AddCons();
 	}
+
+	// create the tree
 }
 
 // destructor
@@ -209,10 +211,19 @@ void CGPrice::AddObj() {
 
 	model.add(objective);
 	obj.end();
+}
 
-	/*model.add(x[13] == 0);
-	model.add(x[11] == 0);
-	model.add(x[12] == 0);*/
+// fix the solution
+CGPrice* CGPrice::FixSol() {
+	model.add(y[4] == 1);
+	model.add(y[2] == 1);
+	model.add(y[3] == 1);
+	model.add(y[5] == 1);
+	model.add(y[9] == 1);
+	model.add(x[2] == 1);
+	model.add(x[14] == 1);
+
+	return this;
 }
 
 // define the constraints
@@ -223,7 +234,7 @@ void CGPrice::AddCons() {
 	AtleastOneEdge();
 
 	// cost of tree extra constraint
-	//AddConsCostOfTree();
+	AddConsCostOfTree();
 }
 
 // add constraints the number of edges selected = the number of vertices selected minus one
@@ -237,16 +248,23 @@ void CGPrice::AddConsNumEdgesVerticesMinusOne() {
 	for (int v = 0; v < this->instance->num_vertices; v++) {
 		sum_y += y[v];
 	}
-
-	model.add(sum_x == sum_y - 1);
+	// name
+	stringstream ss;
+	ss << "Cons_num_edge_num_vertex";
+	model.add(sum_x == sum_y - 1).setName(ss.str().c_str());
 	sum_x.end();
 }
 
 // add constraints that relate x and y variables
 void CGPrice::XYRelation() {
-	for (int e = 0; e < this->instance->num_edges; e++) {		
-		model.add(x[e] <= y[this->instance->edges[e][0]]);
-		model.add(x[e] <= y[this->instance->edges[e][1]]);		
+	for (int e = 0; e < this->instance->num_edges; e++) {	
+		// name
+		stringstream ss;
+		ss << "Cons_x_y_" << e;
+		model.add(x[e] <= y[this->instance->edges[e][0]]).setName(ss.str().c_str());
+		ss.str("");
+		ss << "Cons_x_y_" << e;
+		model.add(x[e] <= y[this->instance->edges[e][1]]).setName(ss.str().c_str());
 	}
 }
 
@@ -268,7 +286,7 @@ void CGPrice::AtleastOneEdge() {
 		for (int e = 0; e < this->instance->num_edges; e++) {
 			if (this->instance->edges[e][0] == v || this->instance->edges[e][1] == v)
 				sum += x[e];			
-		}
+		}				
 		model.add(sum >= y[v]);
 		sum.end();
 	}
@@ -363,10 +381,12 @@ _tree* CGPrice::GetTree(int *vertices, uint32_t* bin_vertices) {
 
 	tree->weight = 0;
 
+	tree->num_edges = 0;
+
 	// loop over all edges
 	for (int e = 0; e < this->instance->num_edges; e++) {
 		if (cplex.getValue(x[e]) > 0) {
-			tree->edges[num_edges++] = e;
+			tree->edges[tree->num_edges++] = e;
 			tree->weight += this->instance->edges[e][2];
 		}
 	}
@@ -400,7 +420,11 @@ _tree* CGPrice::heuristic() {
 	int best_sum_weight = 0;
 	double best_sum_zeta = 0;
 
+	// compute the reward of the tree
+	double current_reward = ComputeReward(tree);
+
 	while (true) {
+		
 		// for each edge compute cost 
 		for (int e = 0; e < this->instance->num_edges; e++) {
 			if (tree->num_vertices == 0) {
@@ -439,6 +463,11 @@ _tree* CGPrice::heuristic() {
 				// compute the other vertex 
 				int u = this->instance->edges[e][0] == v ? this->instance->edges[e][1] : this->instance->edges[e][0];
 
+				// check if the weight of the tree is not greater than the UB
+				if (tree->weight + this->instance->edges[e][2] > this->instance->UB) {
+					continue;
+				}
+
 				// compute the reward
 				test_sum_zeta = sum_zeta + zeta[u];
 				test_sum_weight = sum_weight + this->instance->edges[e][2];
@@ -447,7 +476,8 @@ _tree* CGPrice::heuristic() {
 				new_reward = reward + eta[u] + (sum_weight * sum_zeta) - (test_sum_zeta)*test_sum_weight;
 
 				// check if the reward is better
-				if (new_reward > max_reward) {
+				if (new_reward > max_reward) {					
+
 					max_reward = new_reward;
 					best_sum_weight = test_sum_weight;
 					best_sum_zeta = test_sum_zeta;
@@ -468,21 +498,42 @@ _tree* CGPrice::heuristic() {
 			reward = max_reward;
 			
 			best_edge = -1;
-		}
+
+			//// draw the graph
+			//instance->DrawGraph(tree->edges, tree->num_edges);
+
+			// print reward
+			//printf("reward = %f\n", reward - theta);						
+
+			// print current reward
+			//printf("current reward = %f\n", current_reward);
+		}		
 	}
 
-	instance->DrawGraph(tree->edges, tree->num_edges);
+	//instance->DrawGraph(tree->edges, tree->num_edges);
+
+	// current reward
+	current_reward = ComputeReward(tree);
+	
 
 	// local search
-
 	bool improved = true; 
+
+	int best_e, best_ep;
 
 	while (improved) {
 
 		improved = false;
 		 
+		max_reward = current_reward; 
+
+		// reset best edge
+		best_e = -1;
+		best_ep = -1;
+
 		// for all edges that are in the tree
 		for (int e = 0; e < this->instance->num_edges; e++) {
+			// check if the edge is in the tree
 			if (!tree->IsEdgeInTree(e)) {
 				continue;
 			}
@@ -495,6 +546,7 @@ _tree* CGPrice::heuristic() {
 
 			// for all edges that are not in the tree
 			for (int ep = 0; ep < this->instance->num_edges; ep++) {
+				// check if the edge is in the tree
 				if (tree->IsEdgeInTree(ep)) {
 					continue;
 				}
@@ -506,25 +558,68 @@ _tree* CGPrice::heuristic() {
 				}				
 
 				tree->RemoveEdge(e);
-				tree->AddEdge(ep);
+				tree->AddEdge(ep);						
+							
+				// print tree	
+				//tree->PrintTree();
 
-				instance->DrawGraph(tree->edges, tree->num_edges);
+				//instance->DrawGraph(tree->edges, tree->num_edges);
 
+				if (tree->IsSpanningTree()) {				
+					
+					new_reward = ComputeReward(tree);
+
+					if (new_reward > max_reward) {
+						max_reward = new_reward;
+						improved = true;	
+						best_e = e;	
+						best_ep = ep;
+					}					
+
+					// print the edges removed and added
+					//printf("TEST ---- Removed: (%d %d) Added: (%d %d) -- Reward: %4.2lf \n", this->instance->edges[e][0], this->instance->edges[e][1], this->instance->edges[ep][0], this->instance->edges[ep][1], new_reward);
+				}
 				
-			}
 
-			
+				// reverse the change 
+				tree->RemoveEdge(ep);
+				tree->AddEdge(e);								
+			}			
 		}
 
+		if (improved) {
+			tree->RemoveEdge(best_e);
+			tree->AddEdge(best_ep);
+			current_reward = max_reward;
+
+			// print the edges removed and added
+			printf("DEPLOYED ---- Removed: (%d %d) Added: (%d %d)\n -- Reward: %4.2lf", this->instance->edges[best_e][0], this->instance->edges[best_e][1], this->instance->edges[best_ep][0], this->instance->edges[best_ep][1], current_reward);
+		}
 	}
 
 
 
-	double total_reward = -theta + reward;
+	double total_reward = ComputeReward(tree);
 
 	this->opt = total_reward;
 	
 	tree->reduced_cost = total_reward;	
 
 	return tree;
+}
+
+
+// compute reward
+double CGPrice::ComputeReward(_tree* tree) {
+	double reward = 0;
+
+	for (int i = 0; i < tree->num_vertices; i++) {
+		int v = tree->vertices[i];
+		reward += eta[v];
+		reward -= zeta[v] * tree->weight;
+	}
+
+	reward -= theta;
+
+	return reward;
 }

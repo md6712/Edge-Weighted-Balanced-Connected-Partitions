@@ -1,0 +1,13 @@
+
+              instances//test10_13_2.txt 	 10 	 13 	 2 	140 	210 	166.00 	 0.00 	 0.01  	  0
+              instances//test10_13_3.txt 	 10 	 13 	 3 	0 	124 	67.00 	 0.00 	 0.00  	  0
+              instances//test10_13_4.txt 	 10 	 13 	 4 	0 	106 	43.00 	 0.00 	 0.01  	  0
+              instances//test10_13_5.txt 	 10 	 13 	 5 	0 	26 	6.00 	 0.00 	 0.00  	  0
+              instances//test10_18_2.txt 	 10 	 18 	 2 	42 	119 	78.00 	 0.00 	 0.00  	  0
+              instances//test10_18_3.txt 	 10 	 18 	 3 	0 	75 	41.00 	 0.00 	 0.00  	  0
+              instances//test10_18_4.txt 	 10 	 18 	 4 	0 	63 	28.00 	 0.00 	 0.01  	  0
+              instances//test10_18_5.txt 	 10 	 18 	 5 	0 	71 	19.00 	 0.00 	 0.01  	  0
+              instances//test10_22_2.txt 	 10 	 22 	 2 	7 	112 	68.00 	 0.00 	 0.00  	  0
+              instances//test10_22_3.txt 	 10 	 22 	 3 	0 	77 	41.00 	 0.00 	 0.00  	  0
+              instances//test10_22_4.txt 	 10 	 22 	 4 	0 	25 	10.00 	 0.00 	 0.01  	  0
+              instances//test10_22_5.txt 	 10 	 22 	 5 	0 	56 	19.00 	 0.00 	 0.01  	  0

@@ -47,5 +47,9 @@ public:
 
 	// save the optimal solution
 	void SaveOpt();
+
+	// set integer or linear
+	SetCoverF* SetInteger();
+	SetCoverF* SetLinear();
 };
 

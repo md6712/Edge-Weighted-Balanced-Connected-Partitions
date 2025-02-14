@@ -108,3 +108,9 @@ void Cplex::SetPrintCuts(bool printCuts) {
 void Cplex::SetPrintCycles(bool printCycles) {
 	this->printCycles = printCycles;
 }
+
+void* Cplex::SetQuiet() {
+	cplex.setOut(env.getNullStream());
+	cplex.setWarning(env.getNullStream());
+	return this;
+}

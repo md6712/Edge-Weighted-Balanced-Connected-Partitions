@@ -78,7 +78,7 @@ void SetCoverF::DefVarX() {
 	int num_trees = g->trees.size();
 
 	// define the variable x
-	x = IloNumVarArray(env, num_trees, 0, 1, ILOFLOAT);
+	x = IloNumVarArray(env, num_trees, 0, 1, integer ? ILOINT : ILOFLOAT);
 	for (int T = 0; T < num_trees; T++) {
 		// name 
 		sprintf(name, "x_%d", T);
@@ -175,3 +175,16 @@ SetCoverF* SetCoverF::ForceSol() {
 	model.add(x[110] == 1);	
 	return this;
 }
+
+// set integer
+SetCoverF* SetCoverF::SetInteger() {
+	integer = true;
+	return this;
+}
+
+// set linear
+SetCoverF* SetCoverF::SetLinear() {
+	integer = false;
+	return this;
+}
+

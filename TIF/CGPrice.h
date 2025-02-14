@@ -15,8 +15,7 @@ class CGPrice :
     NumVarMatrix phi;
 
     // objective function
-    IloObjective objective;
-    
+    IloObjective objective;        
 
     CGPrice(_g*, bool);
     ~CGPrice();
@@ -60,8 +59,15 @@ class CGPrice :
     CGPrice* SetPrintCuts(bool);
     CGPrice* SetPrintCycles(bool);
 
+	// fix the solution
+	CGPrice* FixSol();
+
     // Heuritic 
     _tree* heuristic();
+
+	double ComputeReward(_tree * tree);
+
+   
 
 };
 

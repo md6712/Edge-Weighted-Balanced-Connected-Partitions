@@ -145,14 +145,19 @@ csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bb.cpp" />
     <ClCompile Include="binary.cpp" />
+    <ClCompile Include="bmemory.cpp" />
     <ClCompile Include="CG.cpp" />
     <ClCompile Include="CGCallBack.cpp" />
     <ClCompile Include="CGPrice.cpp" />
     <ClCompile Include="Cplex.cpp" />
     <ClCompile Include="CutF.cpp" />
+    <ClCompile Include="DiCutF.cpp" />
     <ClCompile Include="ExF.cpp" />
+    <ClCompile Include="FlowF.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="memory.cpp" />
     <ClCompile Include="PartitionF.cpp" />
     <ClCompile Include="RepresentativeF.cpp" />
     <ClCompile Include="SetCoverF.cpp" />
@@ -162,14 +167,19 @@ csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bb.h" />
     <ClInclude Include="binary.h" />
     <ClInclude Include="AVLTree.h" />
+    <ClInclude Include="bmemory.h" />
     <ClInclude Include="CG.h" />
     <ClInclude Include="CGCallBack.h" />
     <ClInclude Include="CGPrice.h" />
     <ClInclude Include="Cplex.h" />
     <ClInclude Include="CutF.h" />
+    <ClInclude Include="DiCutF.h" />
     <ClInclude Include="ExF.h" />
+    <ClInclude Include="FlowF.h" />
+    <ClInclude Include="memory.h" />
     <ClInclude Include="PartitionF.h" />
     <ClInclude Include="RepresentativeF.h" />
     <ClInclude Include="SetCoverF.h" />

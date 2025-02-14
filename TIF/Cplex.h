@@ -50,4 +50,9 @@ public:
 	void SetPrintCuts(bool);
 	void SetPrintCycles(bool);
 
+
+	// turn off warnings and output
+	void* SetQuiet();
+
+
 };

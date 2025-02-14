@@ -1,0 +1,9 @@
+
+              instances//test10_13_2.txt 	 10 	 13 	 2 	140 	210 	0.00 	 0.00 	 0.04  	 14
+              instances//test10_13_3.txt 	 10 	 13 	 3 	0 	124 	0.00 	 0.00 	 0.04  	 17
+              instances//test10_13_4.txt 	 10 	 13 	 4 	0 	106 	0.00 	 0.00 	 0.04  	 15
+              instances//test10_13_5.txt 	 10 	 13 	 5 	0 	26 	0.00 	 0.00 	 0.04  	 14
+              instances//test10_18_2.txt 	 10 	 18 	 2 	42 	119 	0.00 	 0.00 	 0.03  	 15
+              instances//test10_18_3.txt 	 10 	 18 	 3 	0 	75 	0.00 	 0.00 	 0.04  	 15
+              instances//test10_18_4.txt 	 10 	 18 	 4 	0 	63 	0.00 	 0.00 	 0.04  	 15
+              instances//test10_18_5.txt 	 10 	 18 	 5 	0 	48 	0.00 	 0.00 	 0.11  	 22

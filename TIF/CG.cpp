@@ -65,11 +65,11 @@ CG* CG::Run() {
 	double elapsedtimePricing = 0;
 	
 
-	while (true) 
+	while (true)
 	{
 		timer.setStartTime();
 		Cplex::Run();
-		timer.setEndTime();		
+		timer.setEndTime();
 		elapsedtimeMaster += timer.calcElaspedTime_sec();
 
 		// print the solution
@@ -84,42 +84,52 @@ CG* CG::Run() {
 		cplex.getDuals(dualCover, Cover);
 		cplex.getDuals(dualZ, Z);
 
-		//// print duals
-		//for (int v = 0; v < this->instance->num_vertices; v++) {
-		//	printf(" %f\t", dualCover[v]);
-		//}
-		//printf("\n");
-		//for (int v = 0; v < this->instance->num_vertices; v++) {
-		//	printf("%f\t", dualZ[v]);
-		//}
-		//printf("\n");
-		//printf("dualKnapsack = %f\n", dualKnapsack);
+		// print duals
+		printf_s("dualCover\t = ");
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			printf_s("%3.2f  ", dualCover[v]);
+		}
+		printf_s("\n");
+		printf_s("dualZ \t\t = ");
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			printf_s("%3.2f  ", dualZ[v]);
+		}
+		printf_s("\n");
+		printf_s("dualKnapsack\t = %3.2f\n", dualKnapsack);
 
 		// set dual values in the pricing problem
 		timer.setStartTime();
-		pricing_problem->setTheta(dualKnapsack)
+		pricing_problem
+			->setTheta(dualKnapsack)
 			->setEta(dualCover)
 			->setZeta(dualZ)
-			->UpdateObjectiveCoefficients();
-			/*->PrintModel()
-			->SetPrintCuts(true)
-			->SetPrintCycles(true)*/
-			
-		_tree* tree = pricing_problem->heuristic();
+			->UpdateObjectiveCoefficients()
+			->SetQuiet();
+		/*->PrintModel()
+		->SetPrintCuts(true)
+		->SetPrintCycles(true)*/
 
-		//pricing_problem->Run();
-		//_tree* tree = pricing_problem->GetTree(vertices, bin_vertices); // get the tree associated to the optimal solution
+		// solve the sub-problem heuristically
+		//_tree* tree = pricing_problem->heuristic();
+
+		// print pricing optimal
+		//printf("\n pricing_problem->opt = %f\n", pricing_problem->opt);
+
+		// solve the sub-problem exact
+		pricing_problem->Run();
+		_tree*  tree = pricing_problem->GetTree(vertices, bin_vertices); // get the tree associated to the optimal solution
+		
+		printf_s("pricing_problem->opt = %f\n", pricing_problem->opt);
 
 		timer.setEndTime();
 
 		elapsedtimePricing += timer.calcElaspedTime_sec();
 
 		// print the solution
-		//pricing_problem->PrintSol();
+		pricing_problem->PrintSol();
 	
-
 		// print the tree
-		tree->PrintTree();		
+		tree->PrintTree();			
 
 		// add the tree to the instance
 		this->instance->trees.push_back(tree);
@@ -154,18 +164,19 @@ CG* CG::PrintModel() {
 
 // print solution
 CG* CG::PrintSol() {
-	
-
 	// loop over all variables
 	for (int i = 0; i < x.getSize(); i++) {
-		if (cplex.getValue(x[i]) > 0) {
-			printf("x[%d] = %f \t", i, cplex.getValue(x[i]));
-			this->instance->trees[i]->PrintTree();
+		if (cplex.getValue(x[i]) > 0.00001) {
+			printf("x[%d] = %1.3f \t", i, cplex.getValue(x[i]));
+			this->instance->trees[i]->PrintVerticesWeight();
 		}
 	}
 
 	// print the objective value
-	printf("obj = %f\n", cplex.getObjValue());
+	printf("obj = %3.2f\n", cplex.getObjValue());
+
+	// print number of trees
+	printf("Number of trees: %d\n", this->instance->trees.size());
 
 	return this;
 }
@@ -186,7 +197,7 @@ void CG::AddCons() {
 	// set bounds 
 	Knapsack = IloRange(env, -this->instance->num_trees, IloInfinity);
 	for (int v = 0; v < this->instance->num_vertices; v++) {
-		Cover[v] = IloRange(env, 1, 1);
+		Cover[v] = IloRange(env, 1, IloInfinity);
 		Z[v] = IloRange(env, 0, IloInfinity);
 	}
 	

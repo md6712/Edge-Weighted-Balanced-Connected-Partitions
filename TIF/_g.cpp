@@ -38,7 +38,7 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 	// allocate memory for the cycles
 	cycles = new bool* [100];
 	for (int k = 0; k<100; k++){
-		cycles[k] = new bool[num_edges];
+		cycles[k] = new bool[num_edges+10];
 	}
 
 	// allocate memory for the visited array
@@ -234,6 +234,11 @@ void _g::printGraph()
 	for (int e = 0; e < num_edges; e++) {
 		printf("[%2d] [%2d %2d]--%3d\n", e, edges[e][0], edges[e][1], edges[e][2]);
 	}	
+
+	printf("Arcs:\n");
+	for (int a = 0; a < num_arcs; a++) {
+		printf("[%2d] [%2d -> %2d]--%3d\n", a, arcs[a][0], arcs[a][1], arcs[a][2]);
+	}
 }
 
 void _g::setFilename()
@@ -245,7 +250,6 @@ char* _g::getFilename()
 {
 	return filename;
 }
-
 
 void _g::computeSubsets()
 {
@@ -309,7 +313,6 @@ void _g::outputOPTEdges() {
 	}
 	fclose(f);	
 }
-
 
 // check if there are cycles in opt_edges
 bool _g::CheckCyclesInOptEdges() {
@@ -462,7 +465,6 @@ void _g::PrintCycles() {
 	
 }
 
-
 // print the opt edges
 void _g::PrintOptEdges(bool printWeight) {
 	// choose the first tree
@@ -609,7 +611,6 @@ int _g::MST(int tree, int* mst_vertices, int n) {
 	}
 }
 
-
 // compute the u-v separator for vertices u and v
 bool _g::UVSeperator(int u, int v) {
 	
@@ -725,7 +726,6 @@ bool _g::Seperated(int u, int v) {
 	return seperated;
 }
 
-
 // print all pairs min seperator
 void _g::PrintMinSeperators() {
 	for (int u = 0; u < num_vertices; u++) {
@@ -741,7 +741,6 @@ void _g::PrintMinSeperators() {
 		}
 	}
 }
-
 
 void _g::setDiGraph() {
 
@@ -823,20 +822,25 @@ void _g::generateTrees() {
 		tree->CopyVertices(count, vertices, bin_vertices);
 		if (tree->num_vertices >= 2) {
 			tree->ComputeMST();
+
 		}
 		else
 		{
 			tree->SingltonTree(vertices[0]);
 		}
 
-		if (tree->isSpanningTree) {
+		if (tree->isSpanningTree 
+				&& tree->weight <= UB
+			) {
 			trees.push_back(tree);			
 			tree->RecomputeDegree();
-			std::cout << treeCounter++ << ": ";
+			treeCounter++;
+			/*std::cout << treeCounter++ << ": ";
 			tree->PrintTree();
-			/*if (treeCounter % 10000 == 0) {
+			*/
+			if (treeCounter % 10000 == 0) {
 				std::cout << treeCounter << std::endl;
-			}*/
+			}
 		}
 		else {
 			delete tree;
@@ -855,11 +859,11 @@ void _g::generateTrees() {
 void _g::generateSelectTrees() {
 
 	// check if num_vertices is less than 32
-	if (num_vertices > 32) {
+	/*if (num_vertices > 32) {
 		printf("Number of vertices is greater than 32\n");
 		throw ("Number of vertices is greater than 32\n");
 		return;
-	}
+	}*/
 
 	// allocate memory for the vertices
 	int* vertices = new int[num_vertices];
@@ -917,6 +921,7 @@ void _g::generateSelectTrees() {
 			trees_to_be_added = tree->SplitIntoKTrees(this->num_trees, forbidden_edges );
 			for (int i = 0; i < num_trees; i++) {
 				if (trees_to_be_added[i]->weight > UB) continue;
+				if (trees_to_be_added[i]->weight < 1) continue;
 				if (avl->search(trees_to_be_added[i]->bin_vertices[0]) == nullptr) {					
 					avl->insert(trees_to_be_added[i]->bin_vertices[0], trees_to_be_added[i]);
 					trees.push_back(trees_to_be_added[i]);
@@ -924,7 +929,7 @@ void _g::generateSelectTrees() {
 
 					// print tree 
 
-					//trees_to_be_added[i]->PrintTree(); 
+					trees_to_be_added[i]->PrintTree(); 
 
 					// update counter
 					treeCounter += 1;
@@ -972,7 +977,6 @@ void _g::generateSelectTrees() {
 	std::cout << "Number of trees: " << trees.size() << std::endl;
 }
 
-
 // recompute LB 
 void _g::recomputeLB() {
 	// set the lower bound to 0
@@ -1011,6 +1015,8 @@ void _g::computeUB() {
 	
 	// compute MST 
 	tree->ComputeMST(forbidden_edges);
+
+	tree->PrintTree();
 
 	// recompute degrees
 	tree->RecomputeDegree();
@@ -1059,7 +1065,8 @@ void  _g::ForcedDirectedLayout() {
 	int height = 800;
 
 	// srand for random number generation
-	srand(time(NULL));
+	//srand(time(NULL));
+	srand(0);
 
 	// give random coordinations to the vertices
 	for (int i = 0; i < num_vertices; i++) {
@@ -1070,6 +1077,11 @@ void  _g::ForcedDirectedLayout() {
 	// simulation constants 
 	double k = sqrt(width * height) / num_vertices; // optimal distance between vertices
 	double cooling_factor = 0.99; // cooling factor
+
+	//// print the coordinates
+	//for (int i = 0; i < num_vertices; i++) {
+	//	printf("Vertex %d: (%f, %f)\n", i, coords[i].x, coords[i].y);
+	//}
 
 	// for each iteration
 	for (int itr = 0; itr < 1000; itr++) {
@@ -1114,25 +1126,41 @@ void  _g::ForcedDirectedLayout() {
 		// update the coordinates
 		for (int i = 0; i < num_vertices; i++) {
 			coords[i].x += coords[i].dx * cooling_factor;
-			coords[i].y += coords[i].dy * cooling_factor;
+			coords[i].y += coords[i].dy * cooling_factor;			
+		}
 
-			// check if the coordinates are within the bounds
-			if (coords[i].x < 0) coords[i].x = 0;
-			if (coords[i].x > 1200) coords[i].x = 1200;
-			if (coords[i].y < 0) coords[i].y = 0;
-			if (coords[i].y > 800) coords[i].y = 800;
+		// introduce min_x, min_y, max_x, max_y
+		double min_x = 1200, min_y = 0, max_x = width, max_y = height;
+
+		// map the coordinates to the window
+		for (int i = 0; i < num_vertices; i++) {
+			// compute lowest x and y coordinates
+			min_x = min(coords[i].x, min_x);
+			min_y = min(coords[i].y, min_y);
+
+			// compute highest x and y coordinates
+			max_x = max(coords[i].x, max_x);
+			max_y = max(coords[i].y, max_y);			
+		}
+
+		// current width and height
+		double cwidth = max_x - min_x;
+		double cheight = max_y - min_y;
+
+		// translate each coordinate to a range of 0 to width and 0 to height
+		for (int j = 0; j < num_vertices; j++) {
+			coords[j].x = (coords[j].x - min_x) / cwidth * width;
+			coords[j].y = (coords[j].y - min_y) / cheight * height;
 		}
 
 		// reduce the temperature
-		cooling_factor *= 0.99;		
-
-		
+		cooling_factor *= 0.99;				
 	}
 
 	// print the coordinates
-	for (int i = 0; i < num_vertices; i++) {
+	/*for (int i = 0; i < num_vertices; i++) {
 		printf("Vertex %d: (%f, %f)\n", i, coords[i].x, coords[i].y);
-	}
+	}*/
 
 	// compute minimum x and y coordinates
 	int min_x = width, min_y = height;
@@ -1144,7 +1172,6 @@ void  _g::ForcedDirectedLayout() {
 		max_y = (coords[v].y > max_y) ? coords[v].y : max_y;
 	}
 
-
 	// center the coordinates
 	int diff_x = width / 2 - (max_x + min_x) / 2; 
 	int diff_y = height / 2 - (max_y + min_y) / 2;
@@ -1153,21 +1180,19 @@ void  _g::ForcedDirectedLayout() {
 
 	// shift the coordinates
 	for (int v = 0; v < num_vertices; v++) {
-		coords[v].x -= diff_x;
-		coords[v].y -= diff_y;
+		coords[v].x += diff_x;
+		coords[v].y += diff_y;
 	}
 		
 	// print the coordinates
-	for (int i = 0; i < num_vertices; i++) {
+	/*for (int i = 0; i < num_vertices; i++) {
 		printf("Vertex %d: (%f, %f)\n", i, coords[i].x, coords[i].y);
-	}
+	}*/
 
 }
 
 // draw the graph
 void _g::DrawGraph(int* highlighted_edges, int num_highlighted_edges) {
-
-	
 
 	for (int i = 0; i < num_edges; i++) {
 		int u = edges[i][0];

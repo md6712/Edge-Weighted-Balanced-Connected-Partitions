@@ -7,7 +7,8 @@
 
 
 ILOLAZYCONSTRAINTCALLBACK1(callback, CutF*, cutF) {
-	
+	cutF->lazycallback_count++;
+
 	bool allConflictsAreAdded = true;
 
 	// This part has no effect
@@ -128,6 +129,8 @@ ILOLAZYCONSTRAINTCALLBACK1(callback, CutF*, cutF) {
 };
 
 ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {	
+	cutF->usercallback_count++;
+	
 	// create a two dimensional array to store the opt x
 	double** opt_x = new double*[cutF->instance->num_edges];
 	int* S = new int[cutF->instance->num_vertices];
@@ -193,13 +196,11 @@ ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {
 					for (int i = 0; i < cutF->instance->num_trees; i++) {
 						sum_x += opt_x[e][i];
 					}
-					break;
 				}
 				else if (cutF->instance->edges[e][0] == cutF->instance->dg.id(cutF->instance->dg.target(a)) && cutF->instance->edges[e][1] == cutF->instance->dg.id(cutF->instance->dg.source(a))) {
 					for (int i = 0; i < cutF->instance->num_trees; i++) {
 						sum_x += opt_x[e][i];
-					}
-					break;
+					}					
 				}
 			}
 			capacity[a] = sum_x / 2;
@@ -372,7 +373,7 @@ void CutF::SaveOpt() {
 	this->instance->num_opt_edges = 0;
 	for (int i = 0; i < this->instance->num_trees; i++) {		
 		this->instance->start_edge_tree[i] = this->instance->num_opt_edges;
-		for (int e = 3; e < this->instance->num_edges; e++) {
+		for (int e = 0; e < this->instance->num_edges; e++) {
 			if (this->cplex.isExtracted(this->x[e][i])) {
 				try
 				{		
@@ -388,18 +389,31 @@ void CutF::SaveOpt() {
 			}
 		}
 	}
+
+	// get the objective value
+	this->instance->_opt = (int)this->cplex.getObjValue();
 }
 
-CutF::CutF(_g* instance, bool redirect = false) :Cplex(instance) {
+CutF::CutF(_g* instance, bool redirect = false, bool linear = false) :Cplex(instance) {
 	printCuts = false; 
 	printCycles = false;
+
+	if (linear) {
+		SetLinear();
+	}
+	else {
+		SetInteger();
+	}
 
 	if (!redirect) {
 		// Define Variables 
 		DefVar();
 
 		// Add Objective function 
-		AddObj2();
+		if (second_obj)
+			AddObj2();
+		else 
+			AddObj();		
 		
 		// Add Constraints
 		AddCons();
@@ -412,12 +426,19 @@ CutF::~CutF() {
 
 CutF* CutF::Run() {	
 
-	cplex.use(callback(env, this));
+	cplex.use(callback(env, this)); // TODO: revert this
 	cplex.use(callbackuser(env, this));
 	Cplex::Run();
 
+
+	// print user call back count
+	printf("User callback count: %d\n", usercallback_count);
+
+	// print lazy call back count
+	printf("Lazy callback count: %d\n", lazycallback_count);
+
 	SaveOpt();
-	//instance->PrintOptEdges();
+	instance->PrintOptEdges();
 
 	return this;
 }
@@ -465,7 +486,7 @@ void CutF::DefVar() {
 void CutF::DefVarX() {
 	x = NumVarMatrix(env, instance->num_edges);
 	for (int i = 0; i < instance->num_edges; i++) {
-		x[i] = IloNumVarArray(env, instance->num_trees, 0, 1, ILOINT);
+		x[i] = IloNumVarArray(env, instance->num_trees, 0, 1, integer?ILOINT:ILOFLOAT);
 		for (int j = 0; j < instance->num_trees; j++) {
 			sprintf_s(name, "x(%d,%d)", i, j);
 			x[i][j].setName(name);			
@@ -509,13 +530,22 @@ void CutF::AddObj2() {
 }
 
 void CutF::AddCons() {
-	//AddConsOrderTrees();
+	if (!second_obj)
+		AddConsOrderTrees();
+	
 	AddConstraintPicknkV();
-	//AddConsForEachSubset();
+	
 	AddConsEachToTree();
+
+	// the next three are alternatives
 	//AddConsTwoEdgesOfVertex();
 	AddConsEdgesOfVertex();
+	//AddConsEdgesOfVertex_Improved(); // too many combinations
+
+	//AddConsForEachSubset(); // we add them lazy	
+	
 	//AddConsAtLeastOneEdge();  // we cannot add this constraint, because it eliminates singletons 
+	AddConsBoundByUB();
 }
 
 void CutF::AddConsAtLeastOneEdge() {
@@ -632,6 +662,36 @@ void CutF::AddConsEdgesOfVertex() {
 	}
 }
 
+void CutF::AddConsEdgesOfVertex_Improved() {
+	/*for (int v = 0; v < instance->num_vertices; v++) {
+		for (int e = 0; e < instance->num_edges; e++) {
+			if (instance->edges[e][0] == v || instance->edges[e][1] == v) {
+				for (int f = e + 1; f < instance->num_edges; f++) {
+					if (e != f) {
+						if (instance->edges[f][0] == v || instance->edges[f][1] == v) {
+							for (int i = 0; i < instance->num_trees; i++) {
+								IloExpr cons(env);
+								IloExpr cons2(env);
+								for (int j = 0; j < i; j++) {									
+									cons += x[e][j];
+									cons2 += x[f][j];									
+								}
+								for (int j = i; j < instance->num_trees; j++) {
+									cons += x[e][j];
+									cons2 += x[f][j];
+								}
+								sprintf_s(name, "EdgesOfVertex(%d,%d,%d,%d)", v, e, f, i);
+								model.add(x[e][i] + cons <= 1).setName(name);
+								model.add(x[f][i] + cons2 <= 1).setName(name);
+							}
+						}
+					}
+				}
+			}
+		}
+	}*/
+}
+
 void CutF::AddConsEachToTree() {
 	for (int e = 0; e < instance->num_edges; e++) {
 		IloExpr cons(env);
@@ -643,4 +703,30 @@ void CutF::AddConsEachToTree() {
 	}
 }
 
+void CutF::AddConsBoundByUB() {
+	for (int i = 0; i < instance->num_trees; i++) {
+		IloExpr exprObj(env);
+		for (int e = 0; e < instance->num_edges; e++) {
+			exprObj += instance->edges[e][2] * x[e][i];
+		}
+		model.add(exprObj <= instance->UB);
+	}
+}
 
+// set integer
+CutF* CutF::SetInteger() {
+	Cplex::SetInteger();
+	return this;
+}
+
+// set linear
+CutF* CutF::SetLinear() {
+	Cplex::SetLinear();
+	return this;
+}
+
+// set second objective
+CutF* CutF::SetSecondObj() {
+	second_obj = true;
+	return this;
+}

@@ -1,0 +1,25 @@
+
+              instances//test10_13_2.txt 	 10 	 13 	 2 	140 	210 	189.51 	 0.00 	 0.01  	  0
+              instances//test10_13_3.txt 	 10 	 13 	 3 	0 	124 	77.51 	 0.00 	 0.01  	  0
+              instances//test10_13_4.txt 	 10 	 13 	 4 	0 	106 	38.09 	 0.00 	 0.01  	  0
+              instances//test10_13_5.txt 	 10 	 13 	 5 	0 	26 	4.21 	 0.00 	 0.01  	  0
+              instances//test10_18_2.txt 	 10 	 18 	 2 	42 	119 	103.24 	 0.00 	 0.01  	  0
+              instances//test10_18_3.txt 	 10 	 18 	 3 	0 	75 	19.81 	 0.00 	 0.01  	  0
+              instances//test10_18_4.txt 	 10 	 18 	 4 	0 	63 	17.15 	 0.00 	 0.01  	  0
+              instances//test10_18_5.txt 	 10 	 18 	 5 	0 	71 	18.96 	 0.00 	 0.01  	  0
+              instances//test10_22_2.txt 	 10 	 22 	 2 	17 	102 	84.12 	 0.00 	 0.01  	  0
+              instances//test10_22_3.txt 	 10 	 22 	 3 	0 	90 	36.44 	 0.00 	 0.01  	  0
+              instances//test10_22_4.txt 	 10 	 22 	 4 	0 	25 	7.79 	 0.00 	 0.01  	  0
+              instances//test10_22_5.txt 	 10 	 22 	 5 	0 	56 	16.07 	 0.00 	 0.01  	  0
+              instances//test20_57_2.txt 	 20 	 57 	 2 	26 	262 	130.34 	 0.00 	 0.01  	  0
+              instances//test20_57_3.txt 	 20 	 57 	 3 	0 	121 	61.23 	 0.00 	 0.02  	  0
+              instances//test20_57_4.txt 	 20 	 57 	 4 	0 	143 	86.57 	 0.00 	 0.02  	  0
+              instances//test20_57_5.txt 	 20 	 57 	 5 	0 	52 	23.96 	 0.00 	 0.02  	  0
+              instances//test20_76_2.txt 	 20 	 76 	 2 	2 	122 	61.45 	 0.00 	 0.02  	  0
+              instances//test20_76_3.txt 	 20 	 76 	 3 	0 	138 	60.92 	 0.00 	 0.02  	  0
+              instances//test20_76_4.txt 	 20 	 76 	 4 	0 	72 	38.49 	 0.00 	 0.02  	  0
+              instances//test20_76_5.txt 	 20 	 76 	 5 	0 	84 	37.22 	 0.00 	 0.04  	  0
+              instances//test20_95_2.txt 	 20 	 95 	 2 	0 	187 	103.09 	 0.00 	 0.02  	  0
+              instances//test20_95_3.txt 	 20 	 95 	 3 	0 	91 	61.74 	 0.00 	 0.03  	  0
+              instances//test20_95_4.txt 	 20 	 95 	 4 	0 	73 	31.05 	 0.00 	 0.05  	  0
+              instances//test20_95_5.txt 	 20 	 95 	 5 	0 	54 	26.45 	 0.00 	 0.03  	  0

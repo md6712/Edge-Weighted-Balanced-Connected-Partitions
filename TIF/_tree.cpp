@@ -26,6 +26,10 @@ _tree::_tree(void *instance)
 	this->degree = new int[num_vertices];	
 	this->bin_vertices = new uint32_t[binaryArrlength(num_vertices)];
 	memset(this->bin_vertices, 0, sizeof(uint32_t)*binaryArrlength(num_vertices));
+
+	// initialize the visited and stack arrays	
+	this->visited = new bool[num_vertices];
+	this->stack = new int[num_vertices];
 		
 	this->instance = instance;
 	
@@ -44,6 +48,10 @@ _tree::~_tree()
 	delete[] this->decomp;
 	delete[] this->bin_vertices;
 	delete[] this->degree;
+
+	// delete visited and stack arrays
+	delete[] this->visited;
+	delete[] this->stack;
 }
 
 // singleton tree
@@ -205,6 +213,9 @@ void _tree::ComputeMST(bool *forbidden_edges)
 		// create a mst map
 		ListGraph::EdgeMap<bool> mst(graph, false);
 
+		// fix random seed for reproducibility
+		srand(0);
+
 		// compute the minimum spanning tree
 		kruskal(graph, edgeWeight, mst);
 
@@ -295,6 +306,18 @@ void _tree::PrintTree()
 	std::cout << "\t Weight: " << this->weight << std::endl;
 }
 
+// print vertices and weights
+void _tree::PrintVerticesWeight() {
+	// get the instance graph
+	_g* g = (_g*)this->instance;
+	std::cout << "Vertices: ";
+	for (int i = 0; i < this->num_vertices; i++)
+	{
+		std::cout << this->vertices[i] << " ";
+	}
+	std::cout << "\t Weight: " << this->weight << std::endl;
+}
+
 // split into k trees; 
 _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 
@@ -304,10 +327,10 @@ _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 	// print edges 
 	for (int i = 0; i < this->num_vertices - 1; i++) {
 		int e = this->edges[i];
-		int u = g->edges[this->edges[i]][0];
-		int v = g->edges[this->edges[i]][1];
-		int w = g->edges[this->edges[i]][2];
-		bool f = forbidden_edges[this->edges[i]];
+		int u = g->edges[e][0];
+		int v = g->edges[e][1];
+		int w = g->edges[e][2];
+		bool f = forbidden_edges[e];
 		//std::cout << "Edge: " << u << " " << v << " " << w;
 		//if (f) std::cout << " forbidden";	
 		//std::cout << std::endl;		
@@ -732,15 +755,16 @@ void _tree::RemoveEdge(int edge)
 	RemoveVertex(v);
 
 	// remove the edge
-	for (int i = 0; i < num_vertices - 1; i++) {
+	for (int i = 0; i < num_edges; i++) {
 		if (edges[i] == edge) {
-			while (i < num_vertices - 1) {
+			while (i < num_edges - 1) {
 				edges[i] = edges[i + 1];
 				i++;
 			}		
 			break;
 		}
 	}
+	num_edges--;
 }
 
 // check if the edge is in the tree
@@ -841,6 +865,64 @@ void _tree::RecomputeDegree()
 		// increment the degree
 		degree[uInTree]++;
 		degree[vInTree]++;
+	}
+}
+
+// check if the tree is a spanning tree
+bool _tree::IsSpanningTree()
+{
+	// get the instance graph
+	_g* g = (_g*)this->instance;
+	// check if the number of edges is equal to the number of vertices - 1
+	if (num_edges == num_vertices - 1) {
+		// check if the tree is connected
+		memset(visited, 0, sizeof(bool) * num_vertices);
+		// create a stack		
+		int stackCount = 0;
+		// push the first vertex to the stack
+		stack[stackCount++] = vertices[0];
+		visited[0] = true;
+		// loop over the stack
+		while (stackCount > 0) {
+			// pop the vertex
+			int vertex = stack[--stackCount];
+			// loop over the edges
+			for (int i = 0; i < num_edges; i++) {
+				// get the edge
+				int edgeId = edges[i];
+				// get the vertices of the edge
+				int u = g->edges[edgeId][0];
+				int v = g->edges[edgeId][1];
+				// check if the edge is incident to the vertex
+				if (u == vertex || v == vertex) {
+					// get the other vertex
+					int otherVertex = u == vertex ? v : u;
+					// get the index of the other vertex
+					int otherVertexIndex = -1;
+					for (int j = 0; j < num_vertices; j++) {
+						if (vertices[j] == otherVertex) {
+							otherVertexIndex = j;
+							break;
+						}
+					}
+					// check if the other vertex is not visited
+					if (!visited[otherVertexIndex]) {
+						visited[otherVertexIndex] = true;
+						stack[stackCount++] = otherVertex;
+					}
+				}
+			}
+		}
+		// check if all vertices are visited
+		for (int i = 0; i < num_vertices; i++) {
+			if (!visited[i]) {				
+				return false;
+			}
+		}		
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 

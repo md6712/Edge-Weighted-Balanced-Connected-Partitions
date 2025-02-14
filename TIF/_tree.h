@@ -40,12 +40,17 @@ class _tree
 	int num_forbidden_edges_in_mst; // the number of forbidden edges in the minumum spanning tree
 
 
+	bool* visited; // visited vertices --- used in the check spanning tree test
+	int* stack; // stack --- used in the check spanning tree test
+
 	// constructor and destructor
 	_tree(void *instance);
 	~_tree();
 
 	// print methods
 	void PrintTree();
+	// print the vertices of the tree and weight
+	void PrintVerticesWeight();
 
 	// compute 
 	
@@ -72,7 +77,7 @@ class _tree
 	void ComputeMST(bool* forbidden_edges = NULL);
 
 	// determine 
-	bool IsSpanningTree(int edge);
+	bool IsSpanningTree();
 	bool IsEdgeInTree(int edge);
 	bool GetAnyIncidentVertex(int edge); // returns a vertex of the edge that is connected to the tree; if both vertices are connected, returns any of the two
 	int IncidentVertex(int edge);  // returns a vertext  of the edge that is connected to the tree if the edge is connected; returns -1 if both vertices are connected
@@ -84,6 +89,10 @@ class _tree
 
 	// 
 	int ComputeSpanningKForest(int k, void* instance, int** vertices, int** edges, bool* edge_to_be_removed, int* num_vertices, int* num_edges, int* tree_weights, uint32_t** bin_vertices, bool *forbidden_edges);
+
+
+	// reward sub-problem
+	double ComputeReward();
 
 
 };
