@@ -145,6 +145,7 @@ csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Abor.cpp" />
     <ClCompile Include="bb.cpp" />
     <ClCompile Include="binary.cpp" />
     <ClCompile Include="bmemory.cpp" />
@@ -160,13 +161,17 @@ csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="PartitionF.cpp" />
     <ClCompile Include="RepresentativeF.cpp" />
+    <ClCompile Include="sbbt.cpp" />
     <ClCompile Include="SetCoverF.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="_g.cpp" />
+    <ClCompile Include="_mwcs.cpp" />
+    <ClCompile Include="_pcst.cpp" />
     <ClCompile Include="_render.cpp" />
     <ClCompile Include="_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Abor.h" />
     <ClInclude Include="bb.h" />
     <ClInclude Include="binary.h" />
     <ClInclude Include="AVLTree.h" />
@@ -182,9 +187,12 @@ csfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="memory.h" />
     <ClInclude Include="PartitionF.h" />
     <ClInclude Include="RepresentativeF.h" />
+    <ClInclude Include="sbbt.h" />
     <ClInclude Include="SetCoverF.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="_g.h" />
+    <ClInclude Include="_mwcs.h" />
+    <ClInclude Include="_pcst.h" />
     <ClInclude Include="_render.h" />
     <ClInclude Include="_tree.h" />
   </ItemGroup>

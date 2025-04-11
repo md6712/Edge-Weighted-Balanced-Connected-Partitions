@@ -237,7 +237,6 @@ ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {
 
 			// map the min cut
 			ho.minCutMap(minCut);
-
 			//printf_s("\n S:");
 
 			//// print the min cut

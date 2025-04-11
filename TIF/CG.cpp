@@ -117,32 +117,42 @@ CG* CG::Run() {
 
 		// solve the sub-problem exact
 		pricing_problem->Run();
-		_tree*  tree = pricing_problem->GetTree(vertices, bin_vertices); // get the tree associated to the optimal solution
-		
-		printf_s("pricing_problem->opt = %f\n", pricing_problem->opt);
-
-		timer.setEndTime();
-
-		elapsedtimePricing += timer.calcElaspedTime_sec();
+		_small_tree* tree = pricing_problem->GetTree(); // get the tree associated to the optimal solution
 
 		// print the solution
 		pricing_problem->PrintSol();
-	
+
 		// print the tree
-		tree->PrintTree();			
+		tree->print_vertices(this->instance);
+		
+		printf_s("**************  pricing_problem->opt = %f\n", pricing_problem->opt);
 
-		// add the tree to the instance
-		this->instance->trees.push_back(tree);
+		pricing_problem->solve_pcst();
 
-		// print size of the trees
-		//printf("trees.size() = %d\n", this->instance->trees.size());
+		if (abs(pricing_problem->opt - pricing_problem->best_mwcs) > 0.001) {
+			//pricing_problem->PrintSol();
+			pricing_problem->opt = pricing_problem->opt;			
+		}
 
+		timer.setEndTime();
+
+		elapsedtimePricing += timer.calcElaspedTime_sec();			
+	
+		
+
+		// if the optimal value is less than 0.001, break
 		if (pricing_problem->opt < 0.001) {
 			break;
 		}
 
+		// add the tree to the instance
+		this->instance->select_trees_for_CG.push_back(tree);
+
+		// print size of the trees
+		//printf("trees.size() = %d\n", this->instance->trees.size());		
+
 		// add the variable to the model
-		AddVar(this->instance->trees.size() - 1);
+		AddVar(this->instance->select_trees_for_CG.size() - 1);
 
 	}
 
@@ -168,7 +178,7 @@ CG* CG::PrintSol() {
 	for (int i = 0; i < x.getSize(); i++) {
 		if (cplex.getValue(x[i]) > 0.00001) {
 			printf("x[%d] = %1.3f \t", i, cplex.getValue(x[i]));
-			this->instance->trees[i]->PrintVerticesWeight();
+			this->instance->select_trees_for_CG[i]->print_vertices(this->instance);
 		}
 	}
 
@@ -176,7 +186,7 @@ CG* CG::PrintSol() {
 	printf("obj = %3.2f\n", cplex.getObjValue());
 
 	// print number of trees
-	printf("Number of trees: %d\n", this->instance->trees.size());
+	printf("Number of trees: %d\n", this->instance->select_trees_for_CG.size());
 
 	return this;
 }
@@ -196,9 +206,18 @@ void CG::AddCons() {
 
 	// set bounds 
 	Knapsack = IloRange(env, -this->instance->num_trees, IloInfinity);
+	Knapsack.setName("Knapsack");
 	for (int v = 0; v < this->instance->num_vertices; v++) {
-		Cover[v] = IloRange(env, 1, IloInfinity);
-		Z[v] = IloRange(env, 0, IloInfinity);
+
+		// name cover
+		sprintf(name, "Cover_%d", v);
+		Cover[v] = IloRange(env, 1, 1); 
+		Cover[v].setName(name);
+
+		// name Z
+		sprintf(name, "Z_%d", v);
+		Z[v] = IloRange(env, 0, IloInfinity); 
+		Z[v].setName(name);
 	}
 	
 	// add to model
@@ -226,7 +245,7 @@ void CG::AddVars() {
 	// define the variable X
 	x = IloNumVarArray(env);
 
-	for (int i = 0; i < g->trees.size(); i++) {
+	for (int i = 0; i < g->select_trees_for_CG.size(); i++) {
 		// name 
 		AddVar( i);
 	}
@@ -249,15 +268,15 @@ void CG::AddVar(int i) {
 	Knapsack.setLinearCoef(Xvar, -1);
 
 	for (int v = 0; v < g->num_vertices; v++) {
-		if (checkbin(g->trees[i]->bin_vertices, v)) {
+		if (checkbin(g->select_trees_for_CG[i]->bin_vertices, v)) {
 			Cover[v].setLinearCoef(Xvar, 1);
 		}
 		else {
 			Cover[v].setLinearCoef(Xvar, 0);
 		}
 
-		if (checkbin(g->trees[i]->bin_vertices, v)) {
-			Z[v].setLinearCoef(Xvar, -g->trees[i]->weight);
+		if (checkbin(g->select_trees_for_CG[i]->bin_vertices, v)) {
+			Z[v].setLinearCoef(Xvar, -g->select_trees_for_CG[i]->weight);
 		}
 		else {
 			Z[v].setLinearCoef(Xvar, 0);

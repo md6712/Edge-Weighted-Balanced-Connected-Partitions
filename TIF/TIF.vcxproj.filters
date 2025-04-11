@@ -78,6 +78,18 @@
     <ClCompile Include="memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sbbt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_mwcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_pcst.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Abor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_g.h">
@@ -138,6 +150,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sbbt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="_mwcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="_pcst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Abor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

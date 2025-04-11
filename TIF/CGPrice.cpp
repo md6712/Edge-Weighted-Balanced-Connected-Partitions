@@ -3,6 +3,40 @@
 #include "binary.h"	
 
 ILOLAZYCONSTRAINTCALLBACK1(callback_CG_Price, CGPrice*, cg_price) {
+
+	// get current objective value for the last integer solution
+	double current_obj = (double)getObjValue();
+
+	// if this is positive, stop the algorithm
+	//if (current_obj > 0.001) {
+	//	//cg_price->halted = true;
+	//	cg_price->ub_positive = current_obj;
+
+	//	// copy x values for each edge
+	//	for (int e = 0; e < cg_price->instance->num_edges; e++) {
+	//		if (cg_price->cplex.isExtracted(cg_price->x[e])) {
+	//			cg_price->x_value[e] = getValue(cg_price->x[e]);
+	//		}
+	//		else {
+	//			cg_price->x_value[e] = 0;
+	//		}			
+	//	}
+
+	//	// copy y values for each vertex
+	//	for (int v = 0; v < cg_price->instance->num_vertices; v++) {
+	//		if (cg_price->cplex.isExtracted(cg_price->y[v])) {
+	//			cg_price->y_value[v] = getValue(cg_price->y[v]);
+	//		}
+	//		else {
+	//			cg_price->y_value[v] = 0;
+	//		}
+	//	}		
+
+	//	//abort();
+	//	return;
+	//}
+
+
 	bool allConflictsAreAdded = true;
 
 	if (allConflictsAreAdded) {
@@ -68,6 +102,171 @@ ILOLAZYCONSTRAINTCALLBACK1(callback_CG_Price, CGPrice*, cg_price) {
 	}
 };
 
+ILOUSERCUTCALLBACK1(callbackuser_CG_Price, CGPrice*, cg_price) {	
+	// create a two dimensional array to store the opt x
+	double* opt_x = new double[cg_price->instance->num_edges];
+	int* S = new int[cg_price->instance->num_vertices];
+
+	// set opt_x to 0
+	memset(opt_x, 0, sizeof(double) * cg_price->instance->num_edges);
+
+	// store the opt x values in the array opt_x	
+	for (int e = 0; e < cg_price->instance->num_edges; e++) {
+		if (cg_price->cplex.isExtracted(cg_price->x[e])) {
+			double value = getValue(cg_price->x[e]);
+			opt_x[e] = value;
+		}
+	}	
+	
+	// create a capacity map
+	ListDigraph::ArcMap<double> capacity(cg_price->instance->dg);
+
+
+	// set capacity for all arcs (u,v)
+	for (ListDigraph::ArcIt a(cg_price->instance->dg); a != INVALID; ++a) {
+		double sum_x = 0;
+
+		// if u is the source
+		if (cg_price->instance->dg.id(cg_price->instance->dg.source(a)) == cg_price->instance->num_vertices) {
+			for (int e = 0; e < cg_price->instance->num_edges; e++) {
+				int v = cg_price->instance->dg.id(cg_price->instance->dg.target(a));
+				if (cg_price->instance->edges[e][0] == v || cg_price->instance->edges[e][1] == v) {
+					sum_x += opt_x[e];
+				}
+			}
+			capacity[a] = sum_x / 2;
+		}
+		// if v is the target
+		else if (cg_price->instance->dg.id(cg_price->instance->dg.target(a)) == cg_price->instance->num_vertices + 1) {
+			capacity[a] = 1;
+		}
+
+		// otherwise
+		else {
+			for (int e = 0; e < cg_price->instance->num_edges; e++) {
+				if (cg_price->instance->edges[e][0] == cg_price->instance->dg.id(cg_price->instance->dg.source(a)) && cg_price->instance->edges[e][1] == cg_price->instance->dg.id(cg_price->instance->dg.target(a))) {					
+					sum_x += opt_x[e];					
+				}
+				else if (cg_price->instance->edges[e][0] == cg_price->instance->dg.id(cg_price->instance->dg.target(a)) && cg_price->instance->edges[e][1] == cg_price->instance->dg.id(cg_price->instance->dg.source(a))) {					
+					sum_x += opt_x[e];					
+				}
+			}
+			capacity[a] = sum_x / 2;
+		}		
+	}	
+
+	for (ListDigraph::ArcIt a(cg_price->instance->dg); a != INVALID; ++a) {
+		if (cg_price->instance->dg.id(cg_price->instance->dg.source(a)) == cg_price->instance->num_vertices) {
+			double org_capacity = capacity[a];
+			capacity[a] = 100;
+			
+			EdmondsKarp<ListDigraph, ListDigraph::ArcMap<double>> ho(
+				cg_price->instance->dg,
+				capacity,
+				cg_price->instance->dg.nodeFromId(cg_price->instance->num_vertices),
+				cg_price->instance->dg.nodeFromId(cg_price->instance->num_vertices + 1)
+			);
+
+			ho.run();
+
+			//create a cut map to store the min cut
+			ListDigraph::NodeMap<bool> minCut(cg_price->instance->dg);
+
+			// map the min cut
+			ho.minCutMap(minCut);					
+
+			// compute S 
+			int nS = 0;
+			for (ListDigraph::NodeIt v(cg_price->instance->dg); v != INVALID; ++v) {
+				if (minCut[v]) {
+					if (cg_price->instance->dg.id(v) != cg_price->instance->num_vertices) {
+						S[nS++] = cg_price->instance->dg.id(v);
+
+
+					}
+				}
+			}
+
+			// compute cost: for each edge that doesnt have a vertex in S,  add the cost to the cut
+			double cost = nS;
+			for (int e = 0; e < cg_price->instance->num_edges; e++) {
+				bool SinS = false; // if source in S
+				for (int j = 0; j < nS; j++) {
+					int v = S[j];
+					if (cg_price->instance->edges[e][0] == v) {
+						SinS = true;
+						break;
+					}
+				}
+				bool DinS = false;	// if dist in S
+				for (int j = 0; j < nS; j++) {
+					int v = S[j];
+					if (cg_price->instance->edges[e][1] == v) {
+						DinS = true;
+						break;
+					}
+				}
+				if (!SinS || !DinS) { // if the edge is outside the cut					
+					cost += opt_x[e];					
+				}
+			}
+
+
+			// if cost < n - k - 1, add the cut
+
+			if (nS >= 2 && cost < cg_price->instance->num_vertices - cg_price->instance->num_trees + 1) {
+				IloExpr cons(cg_price->env);
+
+				if (cg_price->printCuts)
+					printf_s("\n cut added: ");
+
+				for (int e = 0; e < cg_price->instance->num_edges; e++) {
+					bool SinS = false; // if source in S
+					for (int j = 0; j < nS; j++) {
+						int v = S[j];
+						if (cg_price->instance->edges[e][0] == v) {
+							SinS = true;
+							break;
+						}
+					}
+					bool DinS = false;	// if dist in S
+					for (int j = 0; j < nS; j++) {
+						int v = S[j];
+						if (cg_price->instance->edges[e][1] == v) {
+							DinS = true;
+							break;
+						}
+					}
+
+					if (SinS && DinS) {						
+						if (cg_price->cplex.isExtracted(cg_price->x[e])) {
+							cons += cg_price->x[e];
+							if (cg_price->printCuts)
+								printf_s("x[%d] +", e);
+
+						}						
+					}
+				}
+
+				add(cons <= nS - 1);
+				if (cg_price->printCuts)
+					printf_s("<= %d", nS - 1);
+
+				cons.end();
+
+				// break as soon as one cut is added.
+				break;
+			}
+
+
+			// restore the capacity
+			capacity[a] = org_capacity;
+		}
+	}
+
+	delete S;	
+	delete opt_x;
+}
 
 // constructor
 CGPrice::CGPrice(_g* g, bool redirect):Cplex(g) {
@@ -78,6 +277,9 @@ CGPrice::CGPrice(_g* g, bool redirect):Cplex(g) {
 	theta = IloNum(0);
 	eta = IloNumArray(env, this->instance->num_vertices);
 	zeta = IloNumArray(env, this->instance->num_vertices);
+
+	// define aborescence
+	aborescence = new Abor(this->instance, false, false);
 
 	if (!redirect) {
 		// Define Variables 
@@ -90,13 +292,44 @@ CGPrice::CGPrice(_g* g, bool redirect):Cplex(g) {
 		AddCons();
 	}
 
-	// create the tree
+	// init x_value and y_value
+	x_value = new double[this->instance->num_edges];
+	y_value = new double[this->instance->num_vertices];
+
+	// vertices postive zeta
+	vertcies_pos_zeta = new int[this->instance->num_vertices];
+
+	// vertices weight
+	vertex_weights = new double[this->instance->mwcs->num_vertices];
+
+	// vertex prizes
+	vertex_prizes = new double[this->instance->mwcs->num_vertices];
+
+	// edge costs
+	edge_costs = new double[this->instance->mwcs->num_edges];
+
+	// roots pcst
+	roots_pcst = new int[this->instance->mwcs->num_vertices];
+
+
+	
 }
 
 // destructor
 CGPrice::~CGPrice() {
 	eta.end();
 	zeta.end();
+
+	delete[] x_value;
+	delete[] y_value;
+	delete[] vertcies_pos_zeta;
+	delete[] vertex_weights;
+
+	delete[] edge_costs;
+	delete[] vertex_prizes;
+	delete[] roots_pcst;
+
+	delete aborescence;
 }
 
 
@@ -144,12 +377,19 @@ CGPrice* CGPrice::PrintSol() {
 
 // run
 CGPrice* CGPrice::Run() {
-
+	halted = false;
 	// set the callback
 	cplex.use(callback_CG_Price(env, this));
 
+	// set the user callback
+	cplex.use(callbackuser_CG_Price(env, this));
+	
 	// run the model
 	Cplex::Run();
+
+	if (halted) {
+		this->opt = ub_positive;
+	}
 	return this;
 }
 
@@ -215,13 +455,13 @@ void CGPrice::AddObj() {
 
 // fix the solution
 CGPrice* CGPrice::FixSol() {
-	model.add(y[4] == 1);
+	/*model.add(y[4] == 1);
 	model.add(y[2] == 1);
 	model.add(y[3] == 1);
 	model.add(y[5] == 1);
 	model.add(y[9] == 1);
 	model.add(x[2] == 1);
-	model.add(x[14] == 1);
+	model.add(x[14] == 1);*/
 
 	return this;
 }
@@ -338,8 +578,6 @@ CGPrice* CGPrice::UpdateObjectiveCoefficients() {
 
 	IloExpr updatedExpr(env);
 
-
-
 	// Add linear terms as needed
 	for (int v = 0; v < this->instance->num_vertices; v++) {		
 		updatedExpr += eta[v] * y[v];
@@ -353,47 +591,48 @@ CGPrice* CGPrice::UpdateObjectiveCoefficients() {
 
 	updatedExpr += -theta ;
 
-	objective.setExpr	(updatedExpr);
+	objective.setExpr (updatedExpr);
 	return this;
 }
 
-
 // get the tree associated to the optimal solution
-_tree* CGPrice::GetTree(int *vertices, uint32_t* bin_vertices) {
+_small_tree* CGPrice::GetTree() {
 
-	// set vertices to zero
-	memset (vertices, 0, sizeof(int) * this->instance->num_vertices);
-	memset (bin_vertices, 0, sizeof(uint32_t) * binaryArrlength(this->instance->num_vertices));
+	_small_tree* tree = new _small_tree();	
 
-	// init num_vertices
-	int num_vertices = 0;
-	int num_edges = 0;
+	memset(tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
 
 	for (int v = 0; v < this->instance->num_vertices; v++) {
-		if (cplex.getValue(y[v]) > 0) {			
-			addbin(bin_vertices, v);
-			vertices[num_vertices++] = v;						
+		if (!halted) {
+			if (cplex.getValue(y[v]) > 0) {
+				addbin(tree->bin_vertices, v);
+			}
+		}
+		else {
+			if (y_value[v] > 0) {
+				addbin(tree->bin_vertices, v);
+			}
 		}
 	}
 
-	_tree* tree = new _tree(this->instance);
-	tree->CopyVertices(num_vertices, vertices, bin_vertices);
-
 	tree->weight = 0;
-
-	tree->num_edges = 0;
 
 	// loop over all edges
 	for (int e = 0; e < this->instance->num_edges; e++) {
-		if (cplex.getValue(x[e]) > 0) {
-			tree->edges[tree->num_edges++] = e;
-			tree->weight += this->instance->edges[e][2];
+		if (!halted) {
+			if (cplex.getValue(x[e]) > 0) {
+				tree->weight += this->instance->edges[e][2];
+			}
+		}
+		else {
+			if (x_value[e] > 0) {
+				tree->weight += this->instance->edges[e][2];
+			}
 		}
 	}
 	
 	return tree;
 }
-
 
 // heuristic 
 _tree* CGPrice::heuristic() {
@@ -608,7 +847,6 @@ _tree* CGPrice::heuristic() {
 	return tree;
 }
 
-
 // compute reward
 double CGPrice::ComputeReward(_tree* tree) {
 	double reward = 0;
@@ -622,4 +860,181 @@ double CGPrice::ComputeReward(_tree* tree) {
 	reward -= theta;
 
 	return reward;
+}
+
+
+// solve using minimum weight connected subgraph
+CGPrice* CGPrice::solve_mwcs() {
+
+	best_mwcs = -INFINITY;
+
+	// get time in ticks
+	clock_t start = clock();
+
+	// count and store vertices with positive zeta
+	num_vertices_pos_zeta = 0;
+	for (int v = 0; v < this->instance->num_vertices; v++) {
+		if (zeta[v] > 0.001) {
+			vertcies_pos_zeta[num_vertices_pos_zeta++] = v;
+		}
+	}
+
+	// compute vertex weight from 0 to num_vertex
+	for (int v = 0; v < instance->num_vertices; v++) {
+		vertex_weights[v] = eta[v];
+	}
+
+	double total_zeta = 0;
+
+
+	// from zero to 2^num_vertices_pos_zeta 
+	for (int i = 0; i < pow(2, num_vertices_pos_zeta); i++) {
+
+		total_zeta = 0;
+		for (int j = 0; j < num_vertices_pos_zeta; j++) {
+			if (checkbinSingle(i, j)) {
+				total_zeta += zeta[vertcies_pos_zeta[j]];
+				vertex_weights[vertcies_pos_zeta[j]] = eta[vertcies_pos_zeta[j]];
+			}
+			else {
+				vertex_weights[vertcies_pos_zeta[j]] = -1000000;
+			}
+		}
+
+		// compute vertex weight for each edge
+		for (int e = 0; e < instance->num_edges; e++) {
+			vertex_weights[instance->num_vertices + e] = -instance->edges[e][2] * total_zeta;
+		}
+
+		this->instance->mwcs
+			->set_vertex_weights(this->vertex_weights, this->theta)
+			->print_in_file()
+			->solve()
+			->read_solution_from_file();	
+
+		if (this->instance->mwcs->objective_value > best_mwcs) {
+			best_mwcs = this->instance->mwcs->objective_value;		
+		}
+
+		if (this->instance->mwcs->objective_value > 0) {
+			//break;
+		}
+
+
+		
+	}
+
+	// print the best mwcs
+	printf("Best MWCS: %4.2lf\n", best_mwcs);
+
+	// compute elapsed time
+	clock_t end = clock();
+	double elapsed_time = double(end - start) / CLOCKS_PER_SEC;
+
+	// print time elapsed
+	printf("Time elapsed: %4.3f\n", elapsed_time);
+
+	return this;
+
+}
+
+
+
+// solve using prize collecting steiner tree
+CGPrice* CGPrice::solve_pcst() {
+	best_pcst = -INFINITY;
+
+	// get time in ticks
+	clock_t start = clock();
+
+	// count and store vertices with positive zeta
+	num_vertices_pos_zeta = 0;
+	for (int v = 0; v < this->instance->num_vertices; v++) {
+		if (zeta[v] > 0.001) {
+			vertcies_pos_zeta[num_vertices_pos_zeta++] = v;
+		}
+	}
+	
+	//// min prize
+	//double min_prize = 1000000;
+
+	// compute vertex weight from 0 to num_vertex	
+	for (int v = 0; v < instance->num_vertices; v++) {
+		vertex_prizes[v] = eta[v];  // eta[v] is the prize of vertex v
+		//if (vertex_prizes[v] < min_prize) {  // find the minimum prize
+		//	min_prize = vertex_prizes[v]; 
+		//}
+	}
+
+	// compute edge costs 
+	for (int e = 0; e < instance->num_edges; e++) {
+		edge_costs[e] = instance->edges[e][2]; // edge cost is the negative of the edge weight
+	}
+
+	//// set minum prize as zerp
+	//if (min_prize > 0) min_prize = 0;
+
+	//// adjust based on the minimum prize
+	//if (min_prize < 0) {
+	//	// adjust the prizes	
+	//	for (int v = 0; v < instance->num_vertices; v++) {
+	//		vertex_prizes[v] -= min_prize;
+	//	}		
+	//}
+
+	double total_zeta = 0;
+	int num_roots = 0;
+	// from zero to 2^num_vertices_pos_zeta
+	for (int i = pow(2, num_vertices_pos_zeta) -1; i >= 0 ; i--) {
+		// set the number of roots to zero
+		num_roots = 0;
+		
+		// set the total zeta to zero
+		total_zeta = 0;
+
+		// computed adjusted cost of edge
+		for (int e = 0; e < instance->num_edges; e++) {
+			edge_costs[e] = instance->edges[e][2]; //- min_prize;
+		}
+		
+		for (int j = 0; j < num_vertices_pos_zeta; j++) {
+			if (checkbinSingle(i, j)) {
+				total_zeta += zeta[vertcies_pos_zeta[j]];
+				roots_pcst[num_roots++] = vertcies_pos_zeta[j];
+			}
+			else {
+				// cost of all adjacent edges is very high
+				for (int e = 0; e < instance->num_edges; e++) {
+					if (instance->edges[e][0] == vertcies_pos_zeta[j] || instance->edges[e][1] == vertcies_pos_zeta[j]) {
+						edge_costs[e] = 1000000;
+					}
+				}
+			}
+		}
+
+		// compute vertex weight for each edge
+		for (int e = 0; e < instance->num_edges; e++) {
+			if (edge_costs[e] != 1000000) {
+				edge_costs[e] *= total_zeta;
+			}
+		}
+
+		this->instance->pcst
+			->set_upper_bound(this->instance->UB)
+			->reset_num_vertices_edges()
+			->reset_active_status()
+			->set_roots(num_roots, roots_pcst)
+			->set_vertex_prizes(this->vertex_prizes)
+			->set_edge_costs(this->edge_costs)
+			//->print()
+			->solve();
+
+		this->aborescence
+			->Init(this->instance->pcst)			
+			->PrintModel()
+			->Run();
+
+	}
+
+	return this;
 }

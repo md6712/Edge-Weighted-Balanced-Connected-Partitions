@@ -7,6 +7,20 @@
 
 #include "_g.h"
 
+void _small_tree::print_vertices(void *g)
+{
+	_g* graph = (_g*)g;
+	printf("Tree: ");
+	for (int v = 0; v < graph->num_vertices; v++)
+	{
+		if (checkbin(bin_vertices, v))
+		{
+			printf("%d ", v);
+		}		
+	}
+	// print weight
+	printf("\t Weight: %d\n", weight);	
+}
 
 _tree::_tree(void *instance)
 {

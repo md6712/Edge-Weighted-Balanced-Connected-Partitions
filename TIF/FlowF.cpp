@@ -255,6 +255,18 @@ FlowF* FlowF::PrintSol() {
 	printf("eta = %f\n", cplex.getValue(eta));
 	printf("\n");
 
+	// print all theta values for each vertex and for each tree
+	for (int v = 0; v < instance->num_vertices; v++) {
+		printf("theta[%d]", v);
+		for (int i = 0; i < instance->num_trees; i++) {
+			if (cplex.isExtracted(theta[v][i]))
+				//if (cplex.getValue(theta[v][i]) > 0.00001) {
+				printf(" %2.2lf \t", cplex.getValue(theta[v][i]));
+			//}		}
+		}
+		printf("\n");
+	}
+
 	return this;
 }
 
@@ -355,9 +367,13 @@ void FlowF::AddCons() {
 	AddConsBoundF0ByY();
 	AddConsSymmetryRootVertex();
 
+
+	// hande suggestion added
+	AddHandeSuggestion();
+
 	// constraints for theta
-	AddConsThetaF0();
-	AddConsThetaEta();
+//	AddConsThetaF0();
+//	AddConsThetaEta();
 
 	//
 	//AddConsCycleXY();
@@ -505,4 +521,15 @@ void FlowF::AddConsCycleXY() {
 			}
 		}
 	}
+}
+
+// add handle suggestion
+void FlowF::AddHandeSuggestion() {
+	// eta is greater than the sum of f0 over v divided by k	
+	IloExpr cons(env);
+	for (int v = 0; v < instance->num_vertices; v++) {
+		cons += f0[v];
+	}
+	model.add(eta >= cons / instance->num_trees);
+	cons.end();
 }

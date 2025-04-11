@@ -1,9 +1,31 @@
 #pragma once
 #include "Cplex.h"
+#include "Abor.h"
+
 class CGPrice :
     public Cplex
 {
     public:
+	double* y_value;
+    double* x_value;
+	bool halted = false;
+    double ub_positive = 0;
+
+    // branch and bound 
+    int num_vertices_pos_zeta; 
+    int* vertcies_pos_zeta; 
+    double* vertex_weights; 
+    double* vertex_prizes; 
+	double* edge_costs;
+
+    int* roots_pcst;
+
+	double best_mwcs = -INFINITY;
+	double best_pcst = -INFINITY;   
+
+	// Aborescence instance
+	Abor* aborescence = NULL;
+
     IloNum theta;
     IloNumArray eta; 
     IloNumArray zeta;
@@ -26,7 +48,6 @@ class CGPrice :
     void DefVarX();
     void DefVarY();
     void DefVarPhi();
-
 
     void AddObj();
     void AddObj2();
@@ -53,7 +74,7 @@ class CGPrice :
     CGPrice* UpdateObjectiveCoefficients();
 
     // get the tree associated to the optimal solution
-    _tree* GetTree(int *vertices, uint32_t *bin_vertices);
+    _small_tree* GetTree();
 
     // set print cuts and cycles
     CGPrice* SetPrintCuts(bool);
@@ -68,6 +89,10 @@ class CGPrice :
 	double ComputeReward(_tree * tree);
 
    
+    // solve using maximum weight connected subgraph
+    CGPrice* solve_mwcs();
 
+	// solve using prize collecting steiner tree
+	CGPrice* solve_pcst();
 };
 

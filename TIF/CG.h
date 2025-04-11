@@ -22,7 +22,6 @@ class CG :
 
     IloObjective obj;
 
-
     // pricing problem
     CGPrice* pricing_problem;
 

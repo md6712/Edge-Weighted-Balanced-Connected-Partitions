@@ -12,6 +12,8 @@
 #include <lemon/list_graph.h>
 
 #include "_tree.h"
+#include "_mwcs.h"
+#include "_pcst.h"
 
 #include "_render.h"
 
@@ -73,9 +75,13 @@ class _g
 		int cycle_start_vertex;
 		bool in_cycle;
 
-		
+		_mwcs* mwcs = nullptr; // the associated minimum weight connected subgraph problem
 
-		std::vector <_tree *> trees;
+		_pcst* pcst = nullptr; // the associated prize collecting steiner tree problem		
+
+		std::vector <_tree*> trees; // vector to store the trees in the forest
+
+		std::vector <_small_tree*> select_trees_for_CG; // vector to store the selected trees in the forest
 
 		uint32_t** subsets; // 2D array to store the subsets of vertices
 		int* nSubsets; // array to store the number of subsets for each tree
@@ -102,6 +108,8 @@ class _g
 		~_g();
 
 		void readGraph();
+		void createMWCS();
+		void createPCST();
 		void printGraph();
 
 		void setFilename();
@@ -127,7 +135,6 @@ class _g
 		void PrintMinSeperators();
 
 		void setDiGraph();	
-		void sortArcs();
 
 		// generate trees
 		void generateTrees();
@@ -138,5 +145,6 @@ class _g
 
 		void ForcedDirectedLayout(); // force directed layout algorithm to define the coordinates of the vertices in the graph
 		void DrawGraph(int* highlighted_edges = nullptr, int num_highlighted_edges = 0); // draw the graph
+
 };
 

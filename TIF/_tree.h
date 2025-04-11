@@ -9,7 +9,10 @@
 #include <lemon/elevator.h>
 #include <lemon/list_graph.h>
 
+#include "binary.h"
+
 #define LARGE_WEIGHT 10000
+#define SIZE_OF_VERTICES_BINARY 4
 
 class _tree
 {
@@ -95,5 +98,13 @@ class _tree
 	double ComputeReward();
 
 
+};
+
+class _small_tree
+{
+public:
+	uint32_t bin_vertices[SIZE_OF_VERTICES_BINARY];
+	int weight;
+	void print_vertices(void* g);
 };
 

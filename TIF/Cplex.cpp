@@ -59,8 +59,8 @@ Cplex* Cplex::Run() {
 			opt = (double)cplex.getObjValue();
 		}
 		else {
-			gap = (double)cplex.getMIPRelativeGap();
-			opt = (double)cplex.getObjValue();
+			gap = (double)cplex.getMIPRelativeGap();			
+			opt = (double)cplex.getBestObjValue();			
 		}
 	}
 	else {

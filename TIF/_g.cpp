@@ -27,12 +27,6 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 	// allocate memory for the coordinates
 	coords = new _coord[num_vertices];
 
-	// compute the number of arcs
-	this->num_arcs = num_edges * 2 + num_vertices;
-
-	// set arcs
-	arcs = new int[num_arcs][3];
-
 	subsetsComputed = false;
 	
 	// allocate memory for the cycles
@@ -81,7 +75,7 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 
 	// allocate memory for the colors
 	v_colors = new color[num_vertices];
-		
+
 }
 
 _g::~_g()
@@ -160,6 +154,24 @@ _g::~_g()
 
 	// deallocate memory for the digraph
 	dg.clear();
+
+	// delete the select trees for CG if size is greater than 0
+	for (int i = 0; i < select_trees_for_CG.size(); i++) {
+		delete select_trees_for_CG[i];
+	}
+
+	// deallocate memory for the select trees for CG	
+	select_trees_for_CG.clear();
+
+	// delete mwcs 
+	if (mwcs != nullptr) {
+		delete mwcs;
+	}
+
+	// delete pcst
+	if (pcst != nullptr) {
+		delete pcst;
+	}
 }
 
 void _g::readGraph()
@@ -176,7 +188,7 @@ void _g::readGraph()
 		fscanf(f, "%d %d %d", &num_vertices, &num_edges, &num_trees);
 		
 		// read edges
-		for (int i = 0; i < num_edges; i++) {		
+		for (int i = 0; i < num_edges; i++) {
 			fscanf(f, "%d %d %d", &edges[i][0], &edges[i][1], &edges[i][2]);
 
 			//without loss of generality, we assume that $u < v$ for each edge $(u,v) \in E$.
@@ -185,22 +197,6 @@ void _g::readGraph()
 				edges[i][0] = edges[i][1];
 				edges[i][1] = temp;
 			}
-
-			// add the arcs
-			arcs[i][0] = edges[i][0];
-			arcs[i][1] = edges[i][1];
-			arcs[i][2] = edges[i][2];
-
-			arcs[i + num_edges][0] = edges[i][1];
-			arcs[i + num_edges][1] = edges[i][0];
-			arcs[i + num_edges][2] = edges[i][2];
-		}		
-
-		// add arcs from s to all vertices in the first tree
-		for (int i = 0; i < num_vertices; i++) {
-			arcs[i + 2 * num_edges][0] = num_vertices;
-			arcs[i + 2 * num_edges][1] = i;
-			arcs[i + 2 * num_edges][2] = 0;
 		}
 	}
 
@@ -222,8 +218,42 @@ void _g::readGraph()
 	}
 
 
+	// compute the number of arcs
+	this->num_arcs = num_edges * 2 + num_vertices;
+
+	// set arcs
+	arcs = new int[num_arcs][3];
+
+	// add arcs
+
+	for (int i = 0; i < num_edges; i++) {
+		// add the arcs
+		arcs[i][0] = edges[i][0];
+		arcs[i][1] = edges[i][1];
+		arcs[i][2] = edges[i][2];
+
+		arcs[i + num_edges][0] = edges[i][1];
+		arcs[i + num_edges][1] = edges[i][0];
+		arcs[i + num_edges][2] = edges[i][2];
+	}
+
+	// add arcs from s to all vertices in the first tree
+	for (int i = 0; i < num_vertices; i++) {
+		arcs[i + 2 * num_edges][0] = num_vertices;
+		arcs[i + 2 * num_edges][1] = i;
+		arcs[i + 2 * num_edges][2] = 0;
+	}
 	
 }
+
+void _g::createMWCS() {
+	this->mwcs = new _mwcs(this);
+}
+
+void _g::createPCST() {
+	this->pcst = new _pcst(this);
+}
+
 
 void _g::printGraph()
 {
@@ -520,6 +550,16 @@ _g* _g::SortEdges() {
 		int* y = (int*)b;
 		return x[2] - y[2];
 	});
+
+	// recompute arcs
+	for (int i = 0; i < num_edges; i++) {
+		arcs[i][0] = edges[i][0];
+		arcs[i][1] = edges[i][1];
+		arcs[i][2] = edges[i][2];
+		arcs[i + num_edges][0] = edges[i][1];
+		arcs[i + num_edges][1] = edges[i][0];
+		arcs[i + num_edges][2] = edges[i][2];
+	}
 	
 	return this;
 }
@@ -755,6 +795,9 @@ void _g::setDiGraph() {
 	// add arcs
 	for (int e = 0; e < num_edges; e++) {
 		dg.addArc(dg.nodeFromId(edges[e][0]), dg.nodeFromId(edges[e][1]));
+	}
+
+	for (int e = 0; e < num_edges; e++) {
 		dg.addArc(dg.nodeFromId(edges[e][1]), dg.nodeFromId(edges[e][0]));
 	}
 
@@ -1016,7 +1059,7 @@ void _g::computeUB() {
 	// compute MST 
 	tree->ComputeMST(forbidden_edges);
 
-	tree->PrintTree();
+	//tree->PrintTree();
 
 	// recompute degrees
 	tree->RecomputeDegree();
@@ -1035,13 +1078,13 @@ void _g::computeUB() {
 	}
 
 	// print UB 
-	std::cout << "UB: " << UB << std::endl;
+	//std::cout << "UB: " << UB << std::endl;
 
 	// recompute LB
 	recomputeLB();
 
 	// print LB
-	std::cout << "LB: " << LB << std::endl;
+	//std::cout << "LB: " << LB << std::endl;
 
 	// delete local arrays
 	delete[] vertices;
@@ -1224,4 +1267,6 @@ void _g::DrawGraph(int* highlighted_edges, int num_highlighted_edges) {
 	}
 
 	render->draw();
+
 }
+

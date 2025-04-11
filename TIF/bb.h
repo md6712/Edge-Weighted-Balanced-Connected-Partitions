@@ -2,8 +2,9 @@
 
 #include "_g.h"
 #include "bmemory.h"
+#include "sbbt.h"
 
-#define SIZE_OF_EDGES_BINARY 4
+#define SIZE_OF_EDGES_BINARY 20
 
 struct _node_t {
 	int UB; 
@@ -12,7 +13,6 @@ struct _node_t {
 	uint32_t mst_edges[SIZE_OF_EDGES_BINARY];
 	_node_t* next;
 };
-
 
 class bb
 {
@@ -23,6 +23,26 @@ class bb
 
 	// benv	
 	_benv_t* benv;
+
+	// benv
+	_benv_t* benv_trees;
+
+	// ssbt
+	_multi_hashed_sbbt* sbbt;
+
+	// ssbt for trees
+	_multi_hashed_sbbt* sbbt_trees;
+
+	// counters 
+	int num_nodes;
+	int num_kruskal_calls; 
+	int num_ub_calls;
+
+	// clock ticks
+	clock_t kruskal_total_time;
+	clock_t ub_total_time;
+
+
 
 	// UB components 
 	int** matrix;
@@ -35,6 +55,11 @@ class bb
 	int** edges_ub; 
 	uint32_t** bin_vertices;
 	int *decomp;
+
+	// sbbt components
+	_small_tree* temp_tree;
+	_sbbt_node* curr_node, * new_node, * mother_node, * tmp_node = NULL;
+	int l;
 		
 public:
 
@@ -44,6 +69,8 @@ public:
 	ListGraph::Edge* edges;
 	ListGraph::EdgeMap<int>* edge_weights;
 	ListGraph::EdgeMap<bool>* mst;
+
+	long long int num_trees_generated;
 
 	bb(_g* instance);
 	~bb();
@@ -72,6 +99,17 @@ public:
 	// print
 	void print_node(_node_t* node);
 	
+	// hash tree
+	__inline uint16_t hash_tree(_small_tree* tree);
+
+	// populate all trees
+	void populate_all_trees();
+
+	// populate all trees investigate
+	void populate_all_trees_investigate(_sbbt_node* node);
+
+	// add singleton trees
+	void add_singlton_trees();
 
 };
 

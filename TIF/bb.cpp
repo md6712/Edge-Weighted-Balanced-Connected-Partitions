@@ -5,11 +5,24 @@
 #include <algorithm>
 #include "binary.h"
 
+
+#define COMP_STATE(state1,state2,result)	result = memcmp(state1,state2,sizeof(_small_tree));
+
 bb::bb(_g* instance)
 {
 	this->instance = instance;
 	// initialize the benv
 	benv = create_benv(sizeof(_node_t));
+
+	// initialize the benv for trees
+	benv_trees = create_benv(sizeof(_small_tree));
+	
+	// set number of trees
+	num_trees_generated = 0;
+
+	// initialize the ssbt
+	sbbt = init_multi_hashed_sbbt(SBBT_HASH_SIZE);
+
 
 	// define graph
 	graph = new ListGraph();
@@ -75,6 +88,15 @@ bb::bb(_g* instance)
 	// define decomp
 	decomp = new int[instance->num_vertices];
 
+	// init counters
+	num_nodes = 0;
+	num_kruskal_calls = 0;
+	num_ub_calls = 0;
+
+	// init clock ticks
+	kruskal_total_time = 0;
+	ub_total_time = 0;
+
 }
 
 
@@ -83,6 +105,12 @@ bb::~bb()
 	// free the benv
 	free_benv(benv);
 
+	// free the benv for trees
+	free_benv(benv_trees);
+
+	// free the ssbt
+	free_multi_hashed_sbbt(sbbt);
+
 	// delete components mst
 	delete[] nodes;
 	delete[] edges; 
@@ -90,15 +118,14 @@ bb::~bb()
 	delete mst;
 	delete graph;
 
-
 	// delete components UB
 	for (int i = 0; i < instance->num_trees - 1; i++) {
 		delete[] matrix[i];
 	}
 	delete[] matrix;
 	delete[] tree_weights;
-	delete[] edges_selected;
-	delete[] edges_to_be_removed;	
+	//delete[] edges_selected;			// this array is fixed size
+	//delete[] edges_to_be_removed;		// this array is fixed size
 		
 
 	for (int i = 0; i < instance->num_trees; i++) {
@@ -123,17 +150,68 @@ bb* bb::Run() {
 	// create root node 
 	this->root = create_root_node();
 
+	int num_tree_before, num_tree_after; // number of trees before and after branching
+	int last_itr_num_tree_increased = 0; // last iteration where the number of trees increased
+
+	int itr = 0;
+
 	while (root != nullptr) {
+
+		// number of iterations
+		itr++;
+
+		// number of trees before branching
+		num_tree_before = num_trees_generated;
+
 		//print_node(root);
 		// branch root
 		branch(root);
 
-			
+		// number of trees after branching
+		num_tree_after = num_trees_generated;
+
+		// check if the number of trees increased
+		if (num_tree_after > num_tree_before) {
+			last_itr_num_tree_increased = itr;
+		}
+
+		// break if num of trees has not increased for 100 iterations
+		if (itr - last_itr_num_tree_increased > 100) {
+			break;
+		}
+
+		if (num_trees_generated > 1000 )
+		{
+			break;
+		}
+
+		if (itr > 50) {
+			break;
+		}
+
 		// remove root
 		_node_t* temp = root->next;
 		free_memory(benv, root);
-		root = temp;				
+		root = temp;	
+		
 	}
+
+	// print number of nodes, num krushkal calls, num ub calls
+	std::cout << "Number of nodes: " << num_nodes << std::endl;
+	std::cout << "Number of Kruskal calls: " << num_kruskal_calls << std::endl;
+	std::cout << "Number of UB calls: " << num_ub_calls << std::endl;
+
+	// print time for kruskal in seconds
+	std::cout << "Total time for Kruskal: " << (double)kruskal_total_time / CLOCKS_PER_SEC << std::endl;	
+
+	// print time for ub in seconds
+	std::cout << "Total time for UB: " << (double)ub_total_time / CLOCKS_PER_SEC << std::endl;
+
+	// add singlton trees
+	add_singlton_trees();
+
+	// copy the trees to the vector
+	populate_all_trees();
 
 	return this;
 }
@@ -143,15 +221,6 @@ void bb::branch(_node_t* node) {
 	// loop over all edges from the highest to the lowest and see if they are in the mst
 	// if they are, then investigate them 
 	_node_t* current, *prev;
-
-	// compute largest forbidden edge
-	/*int largest_forbidden_edge = instance->num_edges;
-	for (int e = instance->num_edges - 1; e >= 0; e--) {
-		if (checkbin(node->forbidden_edges, e)) {
-			largest_forbidden_edge = e;
-			break;
-		}
-	}*/
 
 	for (int e = instance->num_edges -1; e >= 0; e--) {
 		if (checkbin(node->forbidden_edges, e)) continue;
@@ -172,7 +241,7 @@ void bb::branch(_node_t* node) {
 				free_memory(benv, new_node);
 			}
 			else {					
-
+				
 				// add the node to linkedlist such that the linked list stay sorted based on LB
 				prev = nullptr;
 				current = root;
@@ -190,7 +259,8 @@ void bb::branch(_node_t* node) {
 					prev->next = new_node;
 				}
 
-
+				// increase number of nodes
+				num_nodes++;
 			}
 		}
 	}	
@@ -211,7 +281,10 @@ _node_t* bb::create_root_node() {
 	compute_mst(root);
 
 	// print node
-	print_node(root);
+	//print_node(root);
+
+	// increase number of nodes
+	num_nodes++;
 
 	// return root
 	return root;
@@ -226,8 +299,20 @@ void bb::compute_mst(_node_t *node) {
 		}
 	}
 
+	// get clock tick 
+	clock_t start = clock();
+
 	// compute kruskal
 	kruskal(*graph, *edge_weights, *mst);
+
+	// get clock tick
+	clock_t end = clock();
+
+	// update total time
+	kruskal_total_time += end - start;
+
+	// add counter for kruskal calls
+	num_kruskal_calls++;
 
 	// set weight 0
 	int weight = 0;
@@ -251,7 +336,21 @@ void bb::compute_mst(_node_t *node) {
 
 	if (weight < 1000000) {
 		node->LB = ceil((double)weight / instance->num_trees);
-		compute_upper_bound(node);
+		if (node->LB < instance->UB) {
+
+			// get clock tick
+			start = clock();
+
+			// compute upper bound
+			compute_upper_bound(node);
+
+			// get clock tick
+			end = clock();
+
+			// update total time
+			ub_total_time += end - start;
+		}		
+		node->UB = instance->UB;
 	}
 	else {
 		node->LB = 1000000;
@@ -265,7 +364,6 @@ void bb::compute_mst(_node_t *node) {
 		}
 	}
 }
-
 
 void bb::compute_upper_bound(_node_t* node) {
 	
@@ -286,6 +384,9 @@ void bb::compute_upper_bound(_node_t* node) {
 			}
 		}
 	}
+
+	// add counter for ub calls	
+	num_ub_calls++;
 
 	//// print edges to be removed
 	//printf_s("\n Edges to be removed: ");
@@ -352,7 +453,7 @@ void bb::compute_upper_bound(_node_t* node) {
 			aa++; 
 		}
 
-		if (a_min == -1) {
+		if (a_min == -1 || d_min == -1) {
 			break;
 		}
 		else {
@@ -364,6 +465,61 @@ void bb::compute_upper_bound(_node_t* node) {
 
 	// compute spanning k forest
 	node->UB = max_forest_weight = compute_spanning_k_forest(node);
+
+	// for each tree
+	for (int i = 0; i < instance->num_trees; i++) {
+
+		if (tree_weights[i] > instance->UB) {
+			continue;
+		}
+
+		// create a small tree from benv
+		_small_tree* tree = (_small_tree*)alloc_memory(benv_trees);
+		memset(tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+		// copy the vertices
+		memcpy(tree->bin_vertices, bin_vertices[i], sizeof(uint32_t) * binaryArrlength(instance->num_vertices));
+
+		// copy weight 
+		tree->weight = tree_weights[i];		
+
+		
+		uint16_t hash = hash_tree(tree);
+
+		// check if tree exist
+		
+		sbbt->lvl = 0;
+
+		// check if tree exist
+		FIND_STATE_IN_SBBT(sbbt, hash, tree, temp_tree, curr_node, 32, l, _small_tree, COMP_STATE);
+
+		// if (tree exists)
+
+		//// print hash value: 
+		//printf_s("Hash: %d ", hash);
+		//tree->print_vertices(instance);
+
+		if (temp_tree == nullptr){
+			// create a new tree
+			_small_tree* new_tree = (_small_tree*)alloc_memory(benv_trees);
+
+			// copy the tree
+			memcpy(new_tree, tree, sizeof(_small_tree));
+
+			// insert the tree
+			ADD_STATE_IN_SBBT(sbbt, hash, new_node, curr_node, new_tree);
+
+			// balance the tree
+			BALANCE_SBBT_AFTER_ADD(sbbt, hash, curr_node, mother_node, tmp_node, l);
+
+			// count the number of trees
+			num_trees_generated++;
+		}
+		else {
+			// free the tree
+			free_memory(benv_trees, tree);
+		}
+	}
+	
 
 	// update graph upper bound: Min (UB, maxForestWeight)
 	if (node->UB < instance->UB) {
@@ -383,7 +539,6 @@ void bb::compute_upper_bound(_node_t* node) {
 	//	printf_s("\t w: %d ", w);
 	//}
 }
-
 // spanning k forest
 int bb::compute_spanning_k_forest(_node_t* node) {
 	
@@ -406,6 +561,8 @@ int bb::compute_spanning_k_forest(_node_t* node) {
 		vertices[i][num_vertices[i]++] = v;
 		addbin(bin_vertices[i], v);
 	}
+
+
 
 	// compute the edges for each tree
 	for (int e = 0; e < instance->num_edges; e++) {
@@ -499,10 +656,8 @@ int bb::traverse_to_decompose(_node_t* node, int vertex, int prev_vertex, int i,
 	return largest_i;
 }
 
-
-
 void bb::print_node(_node_t* node) {
-	printf_s("\n node LB = %5d  UB = %5d  UB* = %5d  \tf", node->LB, node->UB, instance->UB);
+	printf_s("node LB = %5d  UB = %5d  UB* = %5d  \tf ", node->LB, node->UB, instance->UB);
 
 	for (int e = 0; e < instance->num_edges; e++) {
 		if (checkbin(node->forbidden_edges, e)) {
@@ -513,6 +668,118 @@ void bb::print_node(_node_t* node) {
 	for (int e = 0; e < instance->num_edges; e++) {
 		if (checkbin(node->mst_edges, e)) {
 			printf("(%d,%d)", instance->edges[e][0], instance->edges[e][1]);
+		}
+	}
+	
+	printf_s("\n");
+}
+
+__inline uint16_t bb::hash_tree(_small_tree* tree)
+{
+	uint16_t hash = 0;
+	hash = ((uint16_t)tree->bin_vertices[0]+1) % 65521;
+	hash = (hash * ((uint32_t)tree->bin_vertices[1]+1)) % 65521;
+	hash = (hash * ((uint32_t)tree->bin_vertices[2]+1)) % 65521;
+	hash = (hash * ((uint32_t)tree->bin_vertices[3]+1)) % 65521;
+	hash = (hash * ((uint32_t)tree->weight+1)) % 65521;
+	return hash;
+}
+
+// populate all trees
+void bb::populate_all_trees() {
+	// loop over all possible hash values
+	for (int i = 0; i < SBBT_HASH_SIZE; i++) {
+		// get the root of the tree
+		_sbbt_node* root = sbbt->root[i];
+		// if the root is not null
+		if (root != nullptr) {			
+			// create a small tree not from benv
+			_small_tree* tree = new _small_tree();
+			
+			// copy the tree
+			memcpy(tree, (_small_tree*)root->item, sizeof(_small_tree));
+
+			// add the tree to the vector
+			instance->select_trees_for_CG.push_back(tree);
+
+			// investigate the childs
+			populate_all_trees_investigate(root);
+		}
+	}
+
+	// print the trees
+	for (int i = 0; i < instance->select_trees_for_CG.size(); i++) {
+		instance->select_trees_for_CG[i]->print_vertices(instance);
+	}
+}
+
+// populate all trees investigate // add the trees in the right and left. 
+void bb::populate_all_trees_investigate(_sbbt_node* node) {
+	// investigate the left child
+	if (node->left != nullptr) {
+		// create a small tree not from benv
+		_small_tree* tree = new _small_tree();
+		// copy the tree
+		memcpy(tree, ((_sbbt_node*)node->left)->item, sizeof(_small_tree));
+		// add the tree to the vector		
+		instance->select_trees_for_CG.push_back(tree);
+		// investigate the childs
+		populate_all_trees_investigate((_sbbt_node*)node->left);
+	}
+	// investigate the right child
+	if (node->right != nullptr) {
+		// create a small tree not from benv
+		_small_tree* tree = new _small_tree();
+		// copy the tree
+		memcpy(tree, ((_sbbt_node*)node->right)->item, sizeof(_small_tree));
+		// add the tree to the vector
+		instance->select_trees_for_CG.push_back(tree);
+		// investigate the childs
+		populate_all_trees_investigate((_sbbt_node*)node->right);
+	}
+}
+
+
+// add singleton trees
+void bb::add_singlton_trees() {
+	// loop over all vertices
+	for (int i = 0; i < instance->num_vertices; i++) {
+		// create a small tree not from benv
+		_small_tree* tree = (_small_tree*)alloc_memory(benv_trees);
+		memset(tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+		
+		addbin(tree->bin_vertices, i);
+
+		// copy weight 
+		tree->weight = 0;
+
+		uint16_t hash = hash_tree(tree);
+
+		// check if tree exist
+		sbbt->lvl = 0;
+
+		// check if tree exist
+		FIND_STATE_IN_SBBT(sbbt, hash, tree, temp_tree, curr_node, 32, l, _small_tree, COMP_STATE);		
+
+		if (temp_tree == nullptr) {
+			// create a new tree
+			_small_tree* new_tree = (_small_tree*)alloc_memory(benv_trees);
+
+			// copy the tree
+			memcpy(new_tree, tree, sizeof(_small_tree));
+
+			// insert the tree
+			ADD_STATE_IN_SBBT(sbbt, hash, new_node, curr_node, new_tree);
+
+			// balance the tree
+			BALANCE_SBBT_AFTER_ADD(sbbt, hash, curr_node, mother_node, tmp_node, l);
+
+			// count the number of trees
+			num_trees_generated++;
+		}
+		else {
+			// free the tree
+			free_memory(benv_trees, tree);
 		}
 	}
 }

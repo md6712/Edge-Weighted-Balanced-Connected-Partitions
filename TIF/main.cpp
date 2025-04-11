@@ -97,21 +97,7 @@ char* outputFileName(RunType r) {
 
 void main()
 {    
-
-	//_render* render = new _render();    
- //   
- //   // add lines
-	//render->addEdge(100, 100, 200, 200);
-	//render->addEdge(200, 200, 300, 300);
-
- //   // add tree nodes
- //   render->addNode(1, 100, 100);
- //   render->addNode(2, 200, 200);
-	//render->addNode(3, 300, 300);
-
-	//render->start();
-
-    RunType runType = RunType::t_BB;
+    RunType runType = RunType::t_CG;
     bool linear = false;
 
     initBinary();
@@ -131,9 +117,9 @@ void main()
 	fclose(output);
 
     // loop over parameters and print the instance in a string
-    for (int i = 1; i < 2; i++) {
-        for (int j = 2; j < 3; j++) { 
-            for (int l = 0; l < 4; l++) {
+    for (int i = 3; i < 4; i++) {
+        for (int j = 0; j < 3; j++) { 
+            for (int l = 1; l < 4; l++) {
 
                 output = fopen(outputname, "a+");
 
@@ -172,7 +158,7 @@ void main()
 				g->ForcedDirectedLayout();
 
 				//  print the graph
-                g->DrawGraph();
+                //g->DrawGraph();
 
                 // print min separators
                 //g->PrintMinSeperators();
@@ -200,12 +186,20 @@ void main()
 					delete model;
 				}
                 
-                if (runType == RunType::t_CG) {
-                    //g->generateTrees();
+                if (runType == RunType::t_CG) { 
 
-                   g->generateSelectTrees();
-                    CG* model = (new CG(g, false, linear))
+					g->createMWCS();  // create the MWCS instance
+					g->createPCST();  // create the PCST instance
+
+
+                    bb* model_1 = (new bb(g))                     
+                        ->Run();
+                    delete model_1;     
+
+                    CG* model = ((CG*)(new CG(g, false, linear))
                         ->PrintModel()
+						->SetQuiet()
+                        )
                         ->Run()
 					    ->PrintSol();
                     delete model;
@@ -238,6 +232,8 @@ void main()
                 if (runType == RunType::t_BB) {
                     bb* model = (new bb(g))
                         ->Run();
+
+					delete model;
                 }
 
                 //PartitionF* model = (new PartitionF(g, false))->Run();
@@ -255,7 +251,6 @@ void main()
                 fclose(output);
 
                 g->PrintOptEdges();
-                //g->outputOPTEdges();
 
                 delete g;
                 

@@ -50,6 +50,8 @@ public:
 	void AddConsBoundFByX();
 	void AddConsBoundF0ByY();
 	void AddConsSymmetryRootVertex();
+
+	void AddHandeSuggestion();
 	
 	void AddConsCycleXY();
 
