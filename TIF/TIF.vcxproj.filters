@@ -90,6 +90,9 @@
     <ClCompile Include="Abor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CG_branch.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_g.h">

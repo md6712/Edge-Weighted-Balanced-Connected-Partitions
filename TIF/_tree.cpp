@@ -19,7 +19,11 @@ void _small_tree::print_vertices(void *g)
 		}		
 	}
 	// print weight
-	printf("\t Weight: %d\n", weight);	
+	printf("\t Weight: %d \t Opt: %d \n", weight, part_of_optimal);	
+}
+
+_small_tree::_small_tree() {
+	part_of_optimal = 0;
 }
 
 _tree::_tree(void *instance)
@@ -35,6 +39,8 @@ _tree::_tree(void *instance)
 	this->isSpanningTree = false;
 
 	this->edges = new int[num_vertices - 1];
+	memset(this->edges, -1, sizeof(int) * (num_vertices - 1)); // initialize the edges array
+
 	this->vertices = new int[num_vertices];
 	this->decomp = new int[num_vertices];
 	this->degree = new int[num_vertices];	
@@ -111,19 +117,6 @@ void _tree::CopyVertices(int num_vertices, int* vertices)
 	}
 }
 
-// copy edges
-void _tree::CopyEdges(int num_edges, int* edges)
-{
-	this->edges = new int[num_edges];
-	memcpy(this->edges, edges, sizeof(int)*num_edges);
-	
-	// compute weight 
-	_g* g = (_g*)this->instance;
-	for (int i = 0; i < num_edges; i++)
-	{
-		this->weight += g->edges[edges[i]][2];
-	}
-}
 
 // build graph by edges
 void _tree::InitTreeByEdges(int num_edges, int* edges) {
@@ -414,6 +407,16 @@ _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 		edge_selected[e] = true;
 	}
 	
+	//// print edges to be removed
+	//for (int i = 0; i < this->num_vertices - 1; i++) {
+	//	if (edge_to_be_removed[i]) {
+	//		int u = g->edges[this->edges[i]][0];
+	//		int v = g->edges[this->edges[i]][1];
+	//		int w = g->edges[this->edges[i]][2];
+	//		std::cout << "R Edge: " << u << " " << v << " " << w << std::endl;
+	//	}
+	//}
+
 	// compute the max forest weight
 	maxForestWeight = ComputeSpanningKForest(k, g, vertices, edges, edge_to_be_removed, num_vertices, num_edges, tree_weights, bin_vertices, forbidden_edges);
 
@@ -452,7 +455,7 @@ _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 
 				
 
-				/*std::cout << "Max Forest Weight: " << matrix[aa][dd] << std::endl;*/
+				//std::cout << "Max Forest Weight: " << matrix[aa][dd] << std::endl;
 
 				// check if the weight is less than the min max forest weight
 				if (matrix[aa][dd] < minMaxForestWeight) {
@@ -514,8 +517,9 @@ _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 	// create the trees
 	for (int i = 0; i < k; i++) {
 		// print bin vertices
+
 		//if (num_edges[i] > 0) {
-			trees[i] = new _tree(this->instance);
+			trees[i] = new _tree(this->instance);		
 			trees[i]->InitTreeByEdges(num_edges[i], edges[i]);
 			//trees[i]->PrintTree();
 		//}
@@ -536,7 +540,9 @@ _tree** _tree::SplitIntoKTrees(int k, bool *forbidden_edges) {
 
 	delete[] vertices;
 	delete[] bin_vertices;
+
 	delete[] edges;
+	delete[] num_edges;
 
 	delete[] edge_to_be_removed;
 	delete[] edge_selected;
@@ -592,7 +598,7 @@ int _tree::ComputeSpanningKForest(int k, void* instance, int** vertices, int** e
 				tree_weights[treeU] += g->edges[edgeId][2];
 			else
 				tree_weights[treeU] += LARGE_WEIGHT;
-		}
+		}		
 	}
 
 	int maxForestWeight = 0;
@@ -603,11 +609,21 @@ int _tree::ComputeSpanningKForest(int k, void* instance, int** vertices, int** e
 			maxForestWeight = tree_weights[i];
 		}
 
-		// print the tree
-		//std::cout << "Tree " << i << " Weight: " << tree_weights[i] << std::endl;
+		//// print the tree
+		//std::cout << "Tree " << i << " Weight: " << tree_weights[i] << " ";
+
+		//// print edges
+		//for (int j = 0; j < num_edges[i]; j++) {
+		//	int edgeId = edges[i][j];
+		//	int u = g->edges[edgeId][0];
+		//	int v = g->edges[edgeId][1];
+		//	std::cout << "(" << u << "," << v << ")" << " "; 
+		//}
+
+		//std::cout << std::endl;	
 	}
 
-	// print the maximum forest weight
+	//// print the maximum forest weight
 	//std::cout << "Max Forest Weight: " << maxForestWeight << std::endl;
 
 	return maxForestWeight;
@@ -753,6 +769,9 @@ void _tree::AddEdge(int edge)
 	AddVertex(v);	
 
 	this->weight += ((_g*)this->instance)->edges[edge][2];
+
+	//// print 
+	//std::cout << "Edge Added: " << u << " " << v << std::endl;
 }
 
 // remove edge

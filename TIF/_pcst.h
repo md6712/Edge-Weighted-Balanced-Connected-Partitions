@@ -53,6 +53,9 @@ public:
 	_pcst(void* g);
 	~_pcst(void);
 
+	// print instane 
+	_pcst* print_instance();
+
 	// set upper bound on the weight of the tree
 	_pcst* set_upper_bound(double);
 
@@ -106,5 +109,15 @@ public:
 
 	// print the aborescence instance
 	_pcst* print_aborescence_instance();
+
+
+
+	// set log	
+	_pcst* set_log(bool log) {
+		this->log = log;
+		return this;
+	}
+
+
 };
 

@@ -194,20 +194,8 @@ _pcst* _pcst::print() {
 	return this;
 }
 
-// solve
-_pcst* _pcst::solve() {	
-	// reduce the graph
-	this->reduce_graph();
-	
-	// generate the steiner aborescence instance
-	//this->generate_steiner_aborescence_instance();
-	return this;
-}
-
 // reduce the graph
 _pcst* _pcst::reduce_graph() {
-	
-	
 	
 	// iterator
 	int itr = 0;
@@ -230,7 +218,7 @@ _pcst* _pcst::reduce_graph() {
 		floyd_warshal();
 
 		// compute budgeted shortest path for the heavy pairs (here we select those pairs with shortest path larger than their cost)
-		check_select_budgeted_shortest_paths();
+		//check_select_budgeted_shortest_paths();
 
 		// print the graph
 		if (log) this->print();
@@ -259,14 +247,6 @@ _pcst* _pcst::reduce_graph() {
 			break;
 		}
 	}
-	
-
-	// make the aborescence instance
-	this->make_aborescence_instance();
-
-	// print the aborescence instance
-	///this->print_aborescence_instance();
-
 
 	return this;
 }
@@ -327,18 +307,13 @@ _pcst* _pcst::check_select_budgeted_shortest_paths() {
 			v = this->edges[e][1];
 			// check if cost of the edge is larger than the shortest path computed 
 			if (this->edge_cost[e] > this->all_pairs_shortest_path[u][v]) {
-				// compute budgeted shortest path for the edge
-				double cost = budgeted_shortest_path(u, v, this->edge_weight[e]);
 
-				if (cost < this->edge_cost[e]) {
-					// delete the edge
-					this->edge_active[e] = false;
-					this->num_edges_reduced--;
+				this->edge_active[e] = false;
+				this->num_edges_reduced--;
 
-					// print edge removed
-					printf("Delete edge %d %d with cost %4.2f > %4.2f\n", u, v, this->edge_cost[e], cost);
-
-				}
+				// print edge removed
+				if (log)
+					printf("Delete edge %d %d with cost %4.2f > %4.2f\n", u, v, this->edge_cost[e], this->all_pairs_shortest_path[u][v]);
 			}
 		}
 	}
@@ -487,7 +462,8 @@ _pcst* _pcst::degree_one_prune() {
 							this->num_vertices_reduced--;	
 
 							// print the delete
-							printf("Delete edge %d %d with cost %4.2f > %4.2f\n", this->edges[e][0], this->edges[e][1], this->edge_cost[e], this->vertex_prize[v]);
+							if (log) 
+								printf("Delete edge %d %d with cost %4.2f > %4.2f\n", this->edges[e][0], this->edges[e][1], this->edge_cost[e], this->vertex_prize[v]);
 						}
 					}					
 					break;
@@ -558,12 +534,32 @@ _pcst* _pcst::degree_two_prune() {
 						this->num_vertices_reduced--;
 						
 						// print the delete
-						printf("Delete edges %d %d and %d %d with cost %4.2f + %4.2f > %4.2f\n", this->edges[e1][0], this->edges[e1][1], this->edges[e2][0], this->edges[e2][1], this->edge_cost[e1], this->edge_cost[e2], cost);						
+						if (log)
+							printf("Delete edges %d %d and %d %d with cost %4.2f + %4.2f > %4.2f\n", this->edges[e1][0], this->edges[e1][1], this->edges[e2][0], this->edges[e2][1], this->edge_cost[e1], this->edge_cost[e2], cost);						
 					}					
 				}
 
 			}
 		}
+	}
+	return this;
+}
+
+// print instance 
+_pcst* _pcst::print_instance() {
+	// print the instance
+	printf("PCST instance:\n");
+	printf("Number of vertices: %d\n", this->num_vertices);
+	printf("Number of edges: %d\n", this->num_edges);
+	printf("Upper bound: %4.2f\n", this->UB);
+
+	// print the vertices
+	for (int v = 0; v < this->num_vertices; v++) {
+		printf("Vertex %d: %4.2f\n", v, this->vertex_prize[v]);
+	}
+	// print the edges
+	for (int e = 0; e < this->num_edges; e++) {
+		printf("Edge %d: (%d %d) %4.2f\n", e, this->edges[e][0], this->edges[e][1], this->edge_cost[e]);
 	}
 	return this;
 }

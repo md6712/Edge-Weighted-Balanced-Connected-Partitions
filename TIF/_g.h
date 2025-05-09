@@ -48,6 +48,12 @@ class _g
 
 	public:	
 
+		// end results
+		double _gap = 0;
+		double _opt = MAXINT;
+		double _lp_bound = 0;
+		double _lb_root = 0;
+
 		Graph dg;
 		_render* render;
 
@@ -55,6 +61,7 @@ class _g
 		int num_edges;
 		int num_arcs; 
 		int num_trees; // number of trees in the solution
+		int duplication_num;  // duplication number
 		int(* edges)[3]; // 2D array to store the edges
 		int(* arcs)[3]; // 2D array to store the arcs
 		int *opt_edges;
@@ -74,6 +81,8 @@ class _g
 		int num_cycles;
 		int cycle_start_vertex;
 		bool in_cycle;
+
+		int num_upper_bound_updates = 0; // number of upper bound updates
 
 		_mwcs* mwcs = nullptr; // the associated minimum weight connected subgraph problem
 
@@ -97,14 +106,23 @@ class _g
 		color* v_colors;
 
 
+		// UB
+		int UB_naive = INT32_MAX; // naive upper bound on the size of maximum tree in the forest
 		int UB = INT32_MAX;  // upper bound on the size of maximum tree in the forest
+
+		std::vector <_tree*> trees_ub; // vector to store the trees in the upper bound forest
+
+		// LB
 		int LB = 0; // lower bound on the size of smallest tree in the forest
-		int MST_weight = 0; // weight of the minimum spanning tree
+		int MST_weight = 0; // weight of the minimum spanning tree			
+
+		// Cut counters
+		int n_user_cuts = 0; // number of user cuts
+		int n_lazy_cuts = 0; // number of lazy cuts
+
 		
 
-		double _gap;
-		double _opt;
-		_g(int num_vertices, int num_edges, int num_trees);
+		_g(int num_vertices, int num_edges, int num_trees, int duplication_num);
 		~_g();
 
 		void readGraph();
@@ -145,6 +163,8 @@ class _g
 
 		void ForcedDirectedLayout(); // force directed layout algorithm to define the coordinates of the vertices in the graph
 		void DrawGraph(int* highlighted_edges = nullptr, int num_highlighted_edges = 0); // draw the graph
+
+		void populate_trees_ub_from_select_trees();
 
 };
 

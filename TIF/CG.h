@@ -1,6 +1,11 @@
 #pragma once
 #include "Cplex.h"
 #include "CGPrice.h"
+#include "CG_branch.h"
+
+
+
+
 class CG :
     public Cplex
 {
@@ -26,7 +31,19 @@ class CG :
     CGPrice* pricing_problem;
 
     // run the model
-    CG* Run();
+    CG* Run_CG(BP_node* node);
+
+	CG* Run_BP();
+
+	CG* Impose_Braching(BP_node* node);
+
+
+    // matrix total assignment on pairs of vertices 
+	double** matrix_total_assignment; // matrix of total assignment
+	int best_pair[2]; // best pair of vertices
+
+	// sorted linked list to keep the BP nodes
+	BP_node* root = nullptr;
 
     // constructor and destructor   
     CG(_g*, bool, bool);
@@ -42,11 +59,24 @@ class CG :
     void AddCons();
 
     // add variables 
-    void AddVars();
-    void AddVar(int i);
+    void AddVars(bool integer);
+    void AddVar(int i, bool integer);
+
+	// remove variables
+	void RemoveXVars();
 
     // add objective function
     void AddObj();
+
+
+	// void compute total assignment
+	void ComputeTotalAssignment();
+
+	// void print total assignment
+	void PrintTotalAssignment();
+
+    // add node to linked list
+	void AddNodeSorted(BP_node* node);
 
 };
 

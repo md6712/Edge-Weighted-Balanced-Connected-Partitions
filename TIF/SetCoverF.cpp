@@ -36,8 +36,7 @@ SetCoverF* SetCoverF::Run() {
 	instance->_opt = opt;
 	instance->_gap = gap;
 
-	//SaveOpt();
-	//instance->PrintOptEdges();
+	PrintSol();
 
 	return this;
 }
@@ -185,6 +184,24 @@ SetCoverF* SetCoverF::SetInteger() {
 // set linear
 SetCoverF* SetCoverF::SetLinear() {
 	integer = false;
+	return this;
+}
+
+// print sol
+SetCoverF* SetCoverF::PrintSol() {
+	// read instance
+	_g* g = instance;
+	// number of generated trees
+	int num_trees = g->trees.size();
+	// print the solution
+	for (int T = 0; T < num_trees; T++) {
+		double value = cplex.getValue(x[T]);
+		if (value > 0.001) {
+			printf("X[%3d] = %1.2f\t", T, value);
+			printf_s("Tree %d: ", T);
+			g->trees[T]->PrintVerticesWeight();
+		}
+	}
 	return this;
 }
 

@@ -17,10 +17,13 @@ class Cplex
 {
 public:
 
-	double gap = 0.01;
-	double opt = 0;
+	double gap = 0.01;		// optimality gap
+	double opt = 0;			// optimal value
+	double lp_bound = 0;	// LP bound
+	double root_bound_start = 0;	// root bound start
+	double root_bound_end = 0;		//	root bound end
 
-	bool integer = true;
+	bool integer = true;		
 	bool printCycles;
 	bool printCuts;
 	
@@ -53,6 +56,14 @@ public:
 
 	// turn off warnings and output
 	void* SetQuiet();
+
+	// turn off all cplex cuts
+	void* SetNoCuts();
+
+	// turn  cplex cuts to default
+	void* SetCutsDefault();
+
+	// turn on all cplex cuts
 
 
 };

@@ -10,8 +10,14 @@
 
 #include <lemon/edmonds_karp.h>
 
-_g::_g(int num_vertices, int num_edges, int num_trees)
+_g::_g(int num_vertices, int num_edges, int num_trees, int duplication_num)
 {
+	// initialize _opt and _lp_bound
+	_opt = 0;
+	_lp_bound = 0;
+	_lb_root = 0;
+	_gap = 0;
+
 
 	// initialize the render object
 	render = new _render();
@@ -23,6 +29,7 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 	this->num_vertices = num_vertices;
 	this->num_edges = num_edges;	
 	this->num_trees = num_trees;
+	this->duplication_num = duplication_num;
 
 	// allocate memory for the coordinates
 	coords = new _coord[num_vertices];
@@ -75,6 +82,13 @@ _g::_g(int num_vertices, int num_edges, int num_trees)
 
 	// allocate memory for the colors
 	v_colors = new color[num_vertices];
+
+	// set up number of cuts 
+	n_user_cuts = 0;
+	n_lazy_cuts = 0;
+
+	// trees for ub
+	trees_ub = std::vector<_tree*>();
 
 }
 
@@ -152,6 +166,12 @@ _g::~_g()
 	}
 	trees.clear();
 
+	// for each tree in the trees_ub vector
+	for (int i = 0; i < trees_ub.size(); i++) {
+		delete trees_ub[i];
+	}
+	trees_ub.clear();
+
 	// deallocate memory for the digraph
 	dg.clear();
 
@@ -178,7 +198,6 @@ void _g::readGraph()
 {
 	
 	// Open a file and write the string to the file
-	char buffer [10000];
 	FILE* f = fopen(filename, "r");
 	if (f == NULL) {
 		printf("Error opening file!\n");
@@ -243,6 +262,9 @@ void _g::readGraph()
 		arcs[i + 2 * num_edges][1] = i;
 		arcs[i + 2 * num_edges][2] = 0;
 	}
+
+	// close the file
+	fclose(f);
 	
 }
 
@@ -262,18 +284,18 @@ void _g::printGraph()
 	printf("Number of trees: %d\n", num_trees);
 	printf("Edges:\n");
 	for (int e = 0; e < num_edges; e++) {
-		printf("[%2d] [%2d %2d]--%3d\n", e, edges[e][0], edges[e][1], edges[e][2]);
+		printf("(%3d) [%3d %3d] : w %3d\n", e, edges[e][0], edges[e][1], edges[e][2]);
 	}	
 
-	printf("Arcs:\n");
+	/*printf("Arcs:\n");
 	for (int a = 0; a < num_arcs; a++) {
 		printf("[%2d] [%2d -> %2d]--%3d\n", a, arcs[a][0], arcs[a][1], arcs[a][2]);
-	}
+	}*/
 }
 
 void _g::setFilename()
 {
-	sprintf_s(this->filename, sizeof(char)*200, "instances//test%d_%d_%d.txt", num_vertices, num_edges, num_trees);
+	sprintf_s(this->filename, sizeof(char)*200, "instances//test_%d_%d_%d_%d.txt", num_vertices, num_edges, num_trees, duplication_num);
 }
 
 char* _g::getFilename()
@@ -865,7 +887,6 @@ void _g::generateTrees() {
 		tree->CopyVertices(count, vertices, bin_vertices);
 		if (tree->num_vertices >= 2) {
 			tree->ComputeMST();
-
 		}
 		else
 		{
@@ -1059,6 +1080,7 @@ void _g::computeUB() {
 	// compute MST 
 	tree->ComputeMST(forbidden_edges);
 
+	// print the MST
 	//tree->PrintTree();
 
 	// recompute degrees
@@ -1072,13 +1094,18 @@ void _g::computeUB() {
 
 	// set the upper bound
 	UB = 0;
+	
 	for (int i = 0; i < num_trees; i++) {
+		//trees[i]->PrintTree();
+
 		if (trees[i]->weight > UB) 
 			UB = trees[i]->weight;
 	}
 
-	// print UB 
-	//std::cout << "UB: " << UB << std::endl;
+	UB_naive = UB;
+
+	 //print UB
+	std::cout << "UB: " << UB << std::endl;
 
 	// recompute LB
 	recomputeLB();
@@ -1096,7 +1123,7 @@ void _g::computeUB() {
 	for (int i = 0; i < num_trees; i++) {
 		delete trees[i];
 	}
-	delete[] trees;
+	delete[] trees;	
 }
 
 
@@ -1270,3 +1297,45 @@ void _g::DrawGraph(int* highlighted_edges, int num_highlighted_edges) {
 
 }
 
+
+
+void _g::populate_trees_ub_from_select_trees() {
+
+	// search all trees in the selected trees, and if tree is part of optimal, 
+	// add it to the trees_ub
+
+	for (int i = 0; i < select_trees_for_CG.size(); i++) {
+		_small_tree* st = select_trees_for_CG[i];
+		
+
+		// check if the tree is in the best ub trees
+		if (st->part_of_optimal == num_upper_bound_updates) {						
+
+			_tree* tree = new _tree(this);
+
+			tree->CopyVertices(st->bin_vertices);	
+
+			if (tree->num_vertices >= 2) {
+				tree->ComputeMST();
+			}
+			else
+			{
+				tree->SingltonTree(tree->vertices[0]);
+			}
+
+			trees_ub.push_back(tree);				
+		}		
+	}
+
+	// sort trees based on their weight
+	std::sort(trees_ub.begin(), trees_ub.end(), [](const _tree* a, const _tree* b) {
+		return a->weight > b->weight;
+		});
+
+
+	//// print trees	
+	//for (int i = 0; i < trees_ub.size(); i++) {		
+	//	trees_ub[i]->PrintTree();	
+	//}
+
+}

@@ -6,7 +6,7 @@
 #include "binary.h"
 
 
-#define COMP_STATE(state1,state2,result)	result = memcmp(state1,state2,sizeof(_small_tree));
+#define COMP_STATE(state1,state2,result)	result = memcmp(state1->bin_vertices,state2->bin_vertices,SIZE_OF_VERTICES_BINARY*sizeof(uint32_t));
 
 bb::bb(_g* instance)
 {
@@ -99,7 +99,6 @@ bb::bb(_g* instance)
 
 }
 
-
 bb::~bb()
 {
 	// free the benv
@@ -142,7 +141,6 @@ bb::~bb()
 	delete[] decomp;
 }
 
-
 bb* bb::Run() {
 	// create temp node
 	 _node_t* temp = nullptr;
@@ -155,10 +153,20 @@ bb* bb::Run() {
 
 	int itr = 0;
 
+	// set timer 
+	clock_t start = clock();	
+
 	while (root != nullptr) {
 
 		// number of iterations
 		itr++;
+
+		// check if 10 seconds passed
+		clock_t end = clock();
+		if ((double)(end - start) / CLOCKS_PER_SEC > 10) {
+			break;
+		}
+
 
 		// number of trees before branching
 		num_tree_before = num_trees_generated;
@@ -206,6 +214,9 @@ bb* bb::Run() {
 
 	// print time for ub in seconds
 	std::cout << "Total time for UB: " << (double)ub_total_time / CLOCKS_PER_SEC << std::endl;
+
+	// print UB 
+	std::cout << "UB: " << instance->UB << std::endl;
 
 	// add singlton trees
 	add_singlton_trees();
@@ -466,6 +477,15 @@ void bb::compute_upper_bound(_node_t* node) {
 	// compute spanning k forest
 	node->UB = max_forest_weight = compute_spanning_k_forest(node);
 
+	// update graph upper bound: Min (UB, maxForestWeight)
+	bool opt = false; 
+	if (node->UB < instance->UB) {
+		instance->num_upper_bound_updates++;
+		instance->UB = node->UB;
+		instance->recomputeLB();
+		opt = true;
+	}
+
 	// for each tree
 	for (int i = 0; i < instance->num_trees; i++) {
 
@@ -477,11 +497,10 @@ void bb::compute_upper_bound(_node_t* node) {
 		_small_tree* tree = (_small_tree*)alloc_memory(benv_trees);
 		memset(tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
 		// copy the vertices
-		memcpy(tree->bin_vertices, bin_vertices[i], sizeof(uint32_t) * binaryArrlength(instance->num_vertices));
+		memcpy(tree->bin_vertices, bin_vertices[i], sizeof(uint32_t) * binaryArrlength(instance->num_vertices));		
 
 		// copy weight 
 		tree->weight = tree_weights[i];		
-
 		
 		uint16_t hash = hash_tree(tree);
 
@@ -491,8 +510,6 @@ void bb::compute_upper_bound(_node_t* node) {
 
 		// check if tree exist
 		FIND_STATE_IN_SBBT(sbbt, hash, tree, temp_tree, curr_node, 32, l, _small_tree, COMP_STATE);
-
-		// if (tree exists)
 
 		//// print hash value: 
 		//printf_s("Hash: %d ", hash);
@@ -505,6 +522,8 @@ void bb::compute_upper_bound(_node_t* node) {
 			// copy the tree
 			memcpy(new_tree, tree, sizeof(_small_tree));
 
+			new_tree->part_of_optimal = opt ? instance->num_upper_bound_updates : 0;
+
 			// insert the tree
 			ADD_STATE_IN_SBBT(sbbt, hash, new_node, curr_node, new_tree);
 
@@ -515,16 +534,13 @@ void bb::compute_upper_bound(_node_t* node) {
 			num_trees_generated++;
 		}
 		else {
-			// free the tree
+			// free the tree	
+			if (opt)
+				temp_tree->part_of_optimal = instance->num_upper_bound_updates;
 			free_memory(benv_trees, tree);
 		}
-	}
-	
 
-	// update graph upper bound: Min (UB, maxForestWeight)
-	if (node->UB < instance->UB) {
-		instance->UB = node->UB;
-		instance->recomputeLB();
+		
 	}
 
 	//// print edges for ub
@@ -606,7 +622,7 @@ int bb::traverse_to_decompose(_node_t* node, int vertex, int prev_vertex, int i,
 
 	int connector; // the vertex to connect to
 
-	int new_tree_vertex[4]; // the vertex to create a new tree
+	int new_tree_vertex[9]; // the vertex to create a new tree
 	int new_tree_vertex_count = 0;
 
 	// check all edges
@@ -693,14 +709,21 @@ void bb::populate_all_trees() {
 		_sbbt_node* root = sbbt->root[i];
 		// if the root is not null
 		if (root != nullptr) {			
-			// create a small tree not from benv
-			_small_tree* tree = new _small_tree();
 			
-			// copy the tree
-			memcpy(tree, (_small_tree*)root->item, sizeof(_small_tree));
+			// create an small tree alias
+			_small_tree* t =(_small_tree*) root->item;
 
-			// add the tree to the vector
-			instance->select_trees_for_CG.push_back(tree);
+			// check if tree size is less than UB 
+			if (t->weight <= instance->UB) {				
+				// create a small tree not from benv
+				_small_tree* tree = new _small_tree();
+
+				// copy the tree
+				memcpy(tree, t, sizeof(_small_tree));
+
+				// add the tree to the vector
+				instance->select_trees_for_CG.push_back(tree);
+			}			
 
 			// investigate the childs
 			populate_all_trees_investigate(root);
@@ -717,24 +740,35 @@ void bb::populate_all_trees() {
 void bb::populate_all_trees_investigate(_sbbt_node* node) {
 	// investigate the left child
 	if (node->left != nullptr) {
-		// create a small tree not from benv
-		_small_tree* tree = new _small_tree();
-		// copy the tree
-		memcpy(tree, ((_sbbt_node*)node->left)->item, sizeof(_small_tree));
-		// add the tree to the vector		
-		instance->select_trees_for_CG.push_back(tree);
-		// investigate the childs
+		
+		_small_tree* t = (_small_tree*)((_sbbt_node*)node->left)->item;
+
+		// check if tree size is less than UB
+		if (t->weight <= instance->UB) {
+			// create a small tree not from benv
+			_small_tree* tree = new _small_tree();
+			// copy the tree
+			memcpy(tree, t, sizeof(_small_tree));
+			// add the tree to the vector
+			instance->select_trees_for_CG.push_back(tree);
+		}
+				
 		populate_all_trees_investigate((_sbbt_node*)node->left);
 	}
 	// investigate the right child
 	if (node->right != nullptr) {
-		// create a small tree not from benv
-		_small_tree* tree = new _small_tree();
-		// copy the tree
-		memcpy(tree, ((_sbbt_node*)node->right)->item, sizeof(_small_tree));
-		// add the tree to the vector
-		instance->select_trees_for_CG.push_back(tree);
-		// investigate the childs
+		_small_tree* t = (_small_tree*)((_sbbt_node*)node->right)->item;
+
+		// check if tree size is less than UB
+		if (t->weight < instance->UB) {
+			// create a small tree not from benv
+			_small_tree* tree = new _small_tree();
+			// copy the tree
+			memcpy(tree, t, sizeof(_small_tree));
+			// add the tree to the vector
+			instance->select_trees_for_CG.push_back(tree);
+		}
+
 		populate_all_trees_investigate((_sbbt_node*)node->right);
 	}
 }

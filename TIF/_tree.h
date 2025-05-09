@@ -64,7 +64,6 @@ class _tree
 	void CopyVertices(int num_vertices, int* vertices, uint32_t* bin_vertices);
 	void CopyVertices(int num_vertices, int* vertices);
 	
-	void CopyEdges( int num_edges, int* edges);
 	void InitTreeByEdges(int num_edges, int* edges);
 
 	// Modify the tree
@@ -105,6 +104,8 @@ class _small_tree
 public:
 	uint32_t bin_vertices[SIZE_OF_VERTICES_BINARY];
 	int weight;
+	int part_of_optimal = 0; // zero if not part of opt, larger if part of optimal;  the number indicate the iteration of the optimal solution
 	void print_vertices(void* g);
+	_small_tree();
 };
 

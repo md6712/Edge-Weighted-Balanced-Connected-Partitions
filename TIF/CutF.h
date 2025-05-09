@@ -5,16 +5,15 @@
 class CutF : public Cplex
 {
 
-private: 	
-	bool second_obj = false;
-
-
 public:
 	NumVarMatrix x;	
 
 	int usercallback_count = 0;
 	int lazycallback_count = 0;
 
+	// callback arrays
+	double** opt_x ;
+	int* S;
 
 	CutF(_g*, bool, bool);
 	~CutF();
@@ -23,7 +22,6 @@ public:
 	void DefVarX();	
 
 	void AddObj();
-	void AddObj2();
 
 	void AddCons();
 	void AddConsOrderTrees();
@@ -47,11 +45,10 @@ public:
 
 	CutF* SetInitSol();
 	CutF* ForceSol();
+	CutF* InjectSol();
 	
 	CutF* SetInteger();
 	CutF* SetLinear();
-
-	CutF* SetSecondObj();
 
 	void SaveOpt();
 

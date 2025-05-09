@@ -1,6 +1,7 @@
 #pragma once
 #include "Cplex.h"
 #include "Abor.h"
+#include "CG_branch.h"
 
 class CGPrice :
     public Cplex
@@ -25,6 +26,10 @@ class CGPrice :
 
 	// Aborescence instance
 	Abor* aborescence = NULL;
+
+    // set of trees to add 
+    _small_tree** trees_to_add; // set of trees to add
+    int num_trees_to_add; // number of trees to add
 
     IloNum theta;
     IloNumArray eta; 
@@ -93,6 +98,6 @@ class CGPrice :
     CGPrice* solve_mwcs();
 
 	// solve using prize collecting steiner tree
-	CGPrice* solve_pcst();
+	CGPrice* solve_pcst(BP_node* node , bool log);
 };
 

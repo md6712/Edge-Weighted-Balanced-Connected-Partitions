@@ -1,4 +1,0 @@
-
-              instances//test10_22_3.txt 	 10 	 22 	 3 	68.00 	 0.00 	 0.03 
-              instances//test10_22_4.txt 	 10 	 22 	 4 	25.00 	 0.00 	 0.02 
-              instances//test10_22_5.txt 	 10 	 22 	 5 	56.00 	 0.00 	 0.03 
