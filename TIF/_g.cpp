@@ -1057,76 +1057,6 @@ void _g::recomputeLB() {
 	}
 }
 
-// compute UB 
-void _g::computeUB() {
-	
-	// allocate memory for the vertices
-	int* vertices = new int[num_vertices];
-
-	// binary number for the vertices
-	uint32_t* bin_vertices = new uint32_t[binaryArrlength(this->num_vertices)];
-
-	for (int v = 0; v < num_vertices; v++) {
-		vertices[v] = v;
-		addbin(bin_vertices, v);
-	}
-	_tree* tree = new _tree(this);
-	tree->CopyVertices(num_vertices, vertices, bin_vertices);
-
-	// set a bool vector of forbidden edges
-	bool* forbidden_edges = new bool[num_edges];
-	memset(forbidden_edges, 0, sizeof(bool) * num_edges);
-	
-	// compute MST 
-	tree->ComputeMST(forbidden_edges);
-
-	// print the MST
-	//tree->PrintTree();
-
-	// recompute degrees
-	tree->RecomputeDegree();
-
-	// save the weight of the MST
-	MST_weight = tree->weight;
-
-	// split the trees into k trees	
-	_tree** trees = tree->SplitIntoKTrees(this->num_trees, forbidden_edges);;
-
-	// set the upper bound
-	UB = 0;
-	
-	for (int i = 0; i < num_trees; i++) {
-		//trees[i]->PrintTree();
-
-		if (trees[i]->weight > UB) 
-			UB = trees[i]->weight;
-	}
-
-	UB_naive = UB;
-
-	 //print UB
-	std::cout << "UB: " << UB << std::endl;
-
-	// recompute LB
-	recomputeLB();
-
-	// print LB
-	//std::cout << "LB: " << LB << std::endl;
-
-	// delete local arrays
-	delete[] vertices;
-	delete[] bin_vertices;
-	delete[] forbidden_edges;
-	delete tree;
-
-	// delete trees
-	for (int i = 0; i < num_trees; i++) {
-		delete trees[i];
-	}
-	delete[] trees;	
-}
-
-
 // forced directed layout 
 void  _g::ForcedDirectedLayout() {
 
@@ -1297,8 +1227,6 @@ void _g::DrawGraph(int* highlighted_edges, int num_highlighted_edges) {
 
 }
 
-
-
 void _g::populate_trees_ub_from_select_trees() {
 
 	// search all trees in the selected trees, and if tree is part of optimal, 
@@ -1333,9 +1261,9 @@ void _g::populate_trees_ub_from_select_trees() {
 		});
 
 
-	//// print trees	
-	//for (int i = 0; i < trees_ub.size(); i++) {		
-	//	trees_ub[i]->PrintTree();	
-	//}
+	// print trees	
+	for (int i = 0; i < trees_ub.size(); i++) {		
+		trees_ub[i]->PrintTree();	
+	}
 
 }

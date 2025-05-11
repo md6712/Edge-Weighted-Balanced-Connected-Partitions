@@ -135,7 +135,6 @@ ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {
 	}
 
 	cutF->usercallback_count++;
-	cutF->instance->n_user_cuts++;
 	
 	// create a two dimensional array to store the opt x
 
@@ -347,6 +346,7 @@ ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {
 					}
 				}
 
+				cutF->instance->n_user_cuts++;
 				add(cons <= nS - 1);
 				if (cutF->printCuts)
 					printf_s("<= %d", nS - 1);												

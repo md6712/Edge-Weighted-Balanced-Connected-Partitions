@@ -160,10 +160,10 @@ bb* bb::Run() {
 
 		// number of iterations
 		itr++;
-
-		// check if 10 seconds passed
+		
+		// check if 1 seconds passed
 		clock_t end = clock();
-		if ((double)(end - start) / CLOCKS_PER_SEC > 10) {
+		if ((double)(end - start) / CLOCKS_PER_SEC > 1) {
 			break;
 		}
 
@@ -197,6 +197,10 @@ bb* bb::Run() {
 			break;
 		}
 
+		if (itr == 1) {
+			instance->UB_naive = root->UB;
+		}
+
 		// remove root
 		_node_t* temp = root->next;
 		free_memory(benv, root);
@@ -210,10 +214,13 @@ bb* bb::Run() {
 	std::cout << "Number of UB calls: " << num_ub_calls << std::endl;
 
 	// print time for kruskal in seconds
-	std::cout << "Total time for Kruskal: " << (double)kruskal_total_time / CLOCKS_PER_SEC << std::endl;	
+	std::cout << "Total time for Kruskal: " << (double)kruskal_total_time / CLOCKS_PER_SEC << std::endl;		
 
 	// print time for ub in seconds
 	std::cout << "Total time for UB: " << (double)ub_total_time / CLOCKS_PER_SEC << std::endl;
+
+	// print UB naive 
+	std::cout << "UB naive: " << instance->UB_naive << std::endl;
 
 	// print UB 
 	std::cout << "UB: " << instance->UB << std::endl;

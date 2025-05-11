@@ -205,3 +205,76 @@ SetCoverF* SetCoverF::PrintSol() {
 	return this;
 }
 
+
+// set the initial solution
+SetCoverF* SetCoverF::SetInitSol() {
+
+	// arrays to store the values of the variables
+	IloNumVarArray vars(env);
+	IloNumArray vals(env);
+
+	// arrays to store solution values 
+	int* sol_x = new int[instance->trees.size()];
+
+	// force sol_x to be zero
+	memset(sol_x, 0, sizeof(int) * instance->trees.size());
+
+	int sol_z = 0;
+
+	// for each tree in trees_ub, find the associated tree in the vector trees for that variable set the value of the variable to 1
+	for (int i = 0; i < instance->trees_ub.size(); i++) {
+		_tree* tree = instance->trees_ub[i];
+		// loop over all trees and see if the vertices in two tree are the same 
+		for (int j = 0; j < instance->trees.size(); j++) {
+			_tree* tree2 = instance->trees[j];
+			// compare the two vectors tree->bin_vertices and tree2->bin_vertices
+			int k;
+			bool result = false;
+			if (tree->num_vertices != tree2->num_vertices) {
+				continue;
+			}
+
+			for (k = 0; k < tree->num_vertices; k++) {
+				if (tree->vertices[k] != tree2->vertices[k]) {
+					break;
+				}
+			}
+
+			// if the two trees are the same, set the value of the variable to 1
+			if (k == tree->num_vertices) {
+				result = true;
+			}
+
+			if (result) {
+				// set the value of the variable to 1
+				sol_x[j] = 1;
+				sol_z = max(tree2->weight, sol_z);
+				break;
+			}
+		}
+	}
+
+	// add the values to the array
+	for (int i = 0; i < instance->num_trees; i++) {		
+		vals.add(sol_x[i]);
+		vars.add(x[i]);		
+	}
+
+	// add the value of z
+	vals.add(sol_z);
+	vars.add(z);
+
+	// add the initial solution
+	
+	try {
+		cplex.addMIPStart(vars, vals);
+	}
+	catch (IloException& e) {
+		std::cerr << "MIP start rejected: " << e.getMessage() << std::endl;
+	}
+	vals.end();
+	vars.end();
+
+	delete sol_x;
+	return this;
+}

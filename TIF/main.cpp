@@ -312,8 +312,6 @@ int main()
                 }
 
                 for (int ii = 1; ii < 5; ii++) {
-
-
                     // timer
                     Timer timer;
                     timer.setStartTime();
@@ -342,7 +340,7 @@ int main()
                     g->printGraph();
 
                     // compute the upper bound
-                    g->computeUB();
+                    //g->computeUB();
 
                     // compute the lower bound
                     g->recomputeLB();
@@ -439,27 +437,53 @@ int main()
                     }
 
                     if (settings.model == RunType::t_FLOW) {
-                        FlowF* model = (new FlowF(g, false, settings.linear))
-                            //->PrintModel()                        
-                            ->Run()
-                            ->PrintSol();
+                        timer_lb.setStartTime();
+                        if (!settings.linear) {
+                            FlowF* model = (new FlowF(g, false, true))
+                                ->Run();
+                            delete model;
+
+                            g->_lp_bound = g->_opt;
+                        }
+                        timer_lb.setEndTime();
+                        elapsedtime_lb = timer_lb.calcElaspedTime_sec();
+
+                        timer_model.setStartTime();
+                        FlowF* model = (new FlowF(g, false, settings.linear));
+                        if (!settings.linear) {
+                            model->SetInitSol();
+                        }
+
+                        model->Run();
+      
                         delete model;
+                        timer_model.setEndTime();
+                        elapsedtime_model = timer_model.calcElaspedTime_sec();
                     }
 
-                    if (settings.model == RunType::t_SETCOVER) {
-
-                        bb* model_1 = (new bb(g))
-                            ->Run();
-                        delete model_1;
-
+                    if (settings.model == RunType::t_SETCOVER) {                      
                         g->generateTrees();
 
+                        timer_lb.setStartTime();
+                        if (!settings.linear) {
+                            SetCoverF* model = (new SetCoverF(g, false, true))
+                                ->Run();
+                            delete model;
 
+                            g->_lp_bound = g->_opt;
+                        }
+                        timer_lb.setEndTime();
+                        elapsedtime_lb = timer_lb.calcElaspedTime_sec();
 
-                        SetCoverF* model = (new SetCoverF(g, false, settings.linear))
-                            //->PrintModel()						
-                            ->Run();
+                        timer_model.setStartTime();
+                        SetCoverF* model = (new SetCoverF(g, false, settings.linear));
+                        if (!settings.linear) {
+							model->SetInitSol();
+						}
+                        model->Run();
                         delete model;
+                        timer_model.setEndTime();
+						elapsedtime_model = timer_model.calcElaspedTime_sec();
                     }
 
                     if (settings.model == RunType::t_EX) {
@@ -485,6 +509,13 @@ int main()
                     double gap = g->_gap;
                     double elapsedtime = timer.calcElaspedTime_sec();
 
+					// number of trees depend on the model; for SetCover it is the number of trees in the instance ; for CG it is the number of small trees generated
+					int number_of_trees = (int)g->select_trees_for_CG.size();
+                    if (settings.model == RunType::t_SETCOVER)
+					{
+						number_of_trees = g->trees.size();
+					}
+
                     sprintf_s(outputline, 512,
                         "%40s\t%d\t%d\t%d\t%d\t%d\t%d\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%d\t%d\t%d\t\n",
                         g->getFilename(),       // %40s
@@ -502,7 +533,7 @@ int main()
 						elapsedtime_ub,         // %6.2lf
                         elapsedtime_model,      // %6.2lf
                         elapsedtime,            // %6.2lf
-                        (int)g->select_trees_for_CG.size(),    // %d
+                        number_of_trees,    // %d                        
 						g->n_user_cuts,         // %d
 						g->n_lazy_cuts         // %d
                     );

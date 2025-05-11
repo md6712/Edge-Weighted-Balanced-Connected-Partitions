@@ -159,7 +159,6 @@ class _g
 		void generateSelectTrees();
 
 		void recomputeLB();
-		void computeUB();
 
 		void ForcedDirectedLayout(); // force directed layout algorithm to define the coordinates of the vertices in the graph
 		void DrawGraph(int* highlighted_edges = nullptr, int num_highlighted_edges = 0); // draw the graph

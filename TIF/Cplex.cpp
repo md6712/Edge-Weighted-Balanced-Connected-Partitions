@@ -22,10 +22,10 @@ void Cplex::CplexSettings() {
 	cplex.setWarning(env.getNullStream());
 	
 	// Use up to ~5 GB for working memory (leaves room for overhead)
-	cplex.setParam(IloCplex::WorkMem, 4 * 1024);
+	//cplex.setParam(IloCplex::WorkMem, 4 * 1024);
 
 	// Set a large value, but mostly unused with NodeFileInd=1
-	cplex.setParam(IloCplex::NodeFileInd, 1);  // in MB
+	//cplex.setParam(IloCplex::NodeFileInd, 1);  // in MB
 
 	// One thread per run to avoid memory spikes from multithreading
 	cplex.setParam(IloCplex::Threads, 1);

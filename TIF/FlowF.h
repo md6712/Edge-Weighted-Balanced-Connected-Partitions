@@ -70,6 +70,10 @@ public:
 	// run the model
 	FlowF* Run();
 
+	// set initial solution
+	FlowF* SetInitSol();
+	int TraveseInitSol(int* sol_x, int* sol_f, _tree* tree, int v, int vp);
+
 
 	// print 
 	FlowF* PrintSol();
