@@ -36,6 +36,8 @@ public:
 	void AddConsAtLeastOneEdge(); // at least one edge
 	void AddConsBoundByUB();
 
+	void AddConsForbiddenPairEdges();
+
 	CutF* Run();
 	CutF* PrintSol();
 	CutF* PrintModel();

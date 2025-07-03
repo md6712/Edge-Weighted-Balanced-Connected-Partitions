@@ -1,14 +1,26 @@
-Model  (1: CUT - Cycle Elimination    2: Flow    3: Set Cover - Partition)
-3
+Model  (1: CUT - Cycle Elimination    2: Flow    3: Set Cover - Partition)   4: BP
+4
 
-Vertex Size  (1: 10   2: 20   3: 40)
-1
+Vertex Size  (1: 10   2: 15   3: 20 	4: 25  .... )
+4
 
 Edge probability (0: all  1: 0.1  2: 0.2  3: 0.3)
-4
+0
 
 Num Trees (0: all   1: 2   2: 3   3: 4   4: 5)
-4
+1
+
+Duplication (0: all   1: 1   2: 2   3: 3   4: 4)
+0
 
 Linear / Integer ( 1: integer       0: linear )
+1
+
+User cuts for Flow Problem ( 1: enabled       0: disabled )
+0
+
+flow mutual exclusion cycles ( 1: enabled       0: disabled )
+1
+
+BB Heuristic Time Limit
 1

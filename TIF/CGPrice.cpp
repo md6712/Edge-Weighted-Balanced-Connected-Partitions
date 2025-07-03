@@ -1,6 +1,7 @@
 #include "CGPrice.h"
 #include "Cplex.h"
 #include "binary.h"	
+#include "timer.h"
 
 ILOLAZYCONSTRAINTCALLBACK1(callback_CG_Price, CGPrice*, cg_price) {
 
@@ -948,10 +949,7 @@ CGPrice* CGPrice::solve_mwcs() {
 CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 	
 	// set number of trees to add to zero
-	num_trees_to_add = 0;	
-
-	// set the best pcst
-	best_pcst = -INFINITY;
+	num_trees_to_add = 0;		
 
 	// get time in ticks
 	clock_t start = clock();
@@ -962,7 +960,40 @@ CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 		if (zeta[v] > 0.001) {
 			vertcies_pos_zeta[num_vertices_pos_zeta++] = v;
 		}
+	}	
+
+	int number_of_subproblems = pow(2, num_vertices_pos_zeta); 
+
+	if (/*false &&*/ number_of_subproblems < 2 * instance->UB) {
+		printf("Fixing Vertics [Number of subproblems: %d]\n", number_of_subproblems);
+		// solve pcst fix select vertices
+
+		double best_pcst_fix_vertices = solve_pcst_fix_select_vertices(node, log, false, true);
+
+		//printf("Fixing W [Number of subproblems: %d]\n", instance->UB);
+
+		//double best_pcst_fix_w = solve_pcst_fix_w(node, log, false, false);
+
+		//// print the best pcst
+		//printf("Best PCST F V: %4.2lf\n", best_pcst_fix_vertices);
+		//printf("Best PCST F W: %4.2lf\n", best_pcst_fix_w);
 	}
+	else {
+		printf("Fixing W [Number of subproblems: %d]\n", instance->UB);
+		// solve pcst fix w		
+		solve_pcst_fix_w(node, log, false, true);
+	}	
+
+	return this;
+}
+
+// solve pcst fix select vertices
+double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool force_new_tree, bool add_trees) {
+
+	printf("\n ***** Pricing Solve Vertices *****\n");
+
+	// set the best pcst
+	best_pcst = -INFINITY;
 
 	// compute vertex weight from 0 to num_vertex	
 	for (int v = 0; v < instance->num_vertices; v++) {
@@ -981,11 +1012,10 @@ CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 	double total_zeta = 0;
 	int num_roots = 0;
 
-	// from zero to 2^num_vertices_pos_zeta
-	for (int i = pow(2, num_vertices_pos_zeta) -1; i >= 0 ; i--) {
+	for (int i = pow(2, num_vertices_pos_zeta) - 1; i >= 0; i--) {
 		// set the number of roots to zero
 		num_roots = 0;
-		
+
 		// set the total zeta to zero
 		total_zeta = 0;
 
@@ -993,7 +1023,7 @@ CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 		for (int e = 0; e < instance->num_edges; e++) {
 			edge_costs[e] = instance->edges[e][2]; //- min_prize;
 		}
-		
+
 		// loop over all vertices and check if the vertex is set to be included
 		for (int j = 0; j < num_vertices_pos_zeta; j++) {
 			if (checkbinSingle(i, j)) {
@@ -1019,6 +1049,10 @@ CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 			}
 		}
 
+		// create a timer
+		Timer timer;
+		timer.setStartTime();
+
 		this->instance->pcst
 			->set_upper_bound(this->instance->UB)
 			->reset_num_vertices_edges()
@@ -1029,73 +1063,236 @@ CGPrice* CGPrice::solve_pcst(BP_node* node, bool log) {
 			//->set_log(true)	
 			//->print_instance()
 			//->reduce_graph()
+			//->heuristic(instance)
 			->make_aborescence_instance();
 
+		timer.setEndTime();
+		double elapsed_time = timer.calcElaspedTime_sec();
 
+			
+		// print time elapsed
+		//printf("Time elapsed Prepare: %4.3f\n", elapsed_time);
 
-		AborSol *abor_opt = this->aborescence
-			->Init(this->instance->pcst, theta)			
-			->AddConstraintsBranching(node)
-			->Run(log);
-	
+		
+		timer.setStartTime();		
+		// init the aborescence instance
+		this->aborescence
+			->Init(this->instance->pcst, theta)
+			->AddConstraintsBranching(node); 
+
+		// if force_new_tree is true, we add the no good cuts to the aborescence instance
+		if (force_new_tree) {
+			this->aborescence->AddNoGoodCuts(num_trees_to_add, trees_to_add);
+		}
+			
+		// run the aborescence instance
+		AborSol** abor_opt = this->aborescence->Run(zeta,-1,log);
+		timer.setEndTime();
+		elapsed_time = timer.calcElaspedTime_sec();
+		//printf("Time elapsed Solve: %4.3f\n", elapsed_time);
+
 		// print abor solution
 		//abor_opt->tree->print_vertices(this->instance);
-		
+
 		// print abor optimal value
 		//printf("Abor objective value: %4.2lf\n", abor_opt->value);
 
-		
+
 		// update best pcst 
-		if (abor_opt->value > best_pcst) {
-			best_pcst = abor_opt->value;
+		if (abor_opt[0]->value > best_pcst) {
+			best_pcst = abor_opt[0]->value;
 		}
 
+		for (int sol = 0; sol < MAX_ABOR_SOL; sol++){
+			if (abor_opt[sol]->value < 0.001) break; 
 		// if abor_opt value is greater than zero, then we add a copy of the associated tree to the list of trees to add
-		if (abor_opt->value > 0) {
+			if (abor_opt[sol]->value >= 0.001 && add_trees) {
 
-			
-			// check if the tree is already in the list of trees to add
-			bool added = false;
+				// check if the tree is already in the list of trees to add
+				bool added = false;
 
-			// check if the tree has already been added 
-			for (int t = 0; t < num_trees_to_add; t++) {
-				if (memcmp(trees_to_add[t]->bin_vertices, abor_opt->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY) == 0) {
-					added = true;
-					break;
+				// check if the tree has already been added 
+				for (int t = 0; t < num_trees_to_add; t++) {
+					if (memcmp(trees_to_add[t]->bin_vertices, abor_opt[sol]->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY) == 0) {
+						added = true;
+						break;
+					}
 				}
-			}
 
-			// if the tree is not already added, we add it
-			if (!added) {
-				// create a new tree
-				_small_tree* tree = new _small_tree();
+				// if the tree is not already added, we add it
+				if (!added) {
+					// create a new tree
+					_small_tree* tree = new _small_tree();
 
-				// copy bin_vertices
-				memcpy(tree->bin_vertices, abor_opt->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+					// copy bin_vertices
+					memcpy(tree->bin_vertices, abor_opt[sol]->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
 
-				// set the weight of the tree
-				tree->weight = abor_opt->tree->weight;
+					// set the weight of the tree
+					tree->weight = abor_opt[sol]->tree->weight;
 
-				// add the tree to the list of trees to add
-				trees_to_add[num_trees_to_add++] = tree;
+					// add the tree to the list of trees to add
+					trees_to_add[num_trees_to_add++] = tree;
 
-				//// print the tree
-				//tree->print_vertices(this->instance);
+					//// print the cost of tree
+					printf("Abor objective value [%7d]: %6.2lf \t", i, abor_opt[sol]->value);
 
-				//// print the cost of tree
-				//printf("Cost of tree: %4.2lf\n", abor_opt->value);
+					//// print the tree
+					tree->print_vertices(this->instance);
 
-				// stop after adding one tree
-				//break;
+					// stop after adding one tree
+					//break;
+				}
 			}
 		}
 	}
 
-	// print number of tries
-	printf("Number of tries: %d\n",(int) pow(2, num_vertices_pos_zeta));
+	// print the best pcst
+	//printf("Best PCST: %4.2lf\n", best_pcst);
+
+	return best_pcst;
+}
+
+
+double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, bool add_trees) {
+	// compute vertex weight from 0 to num_vertex	
+
+	printf("\n ***** Pricing Solve Weight *****\n");
+
+	// set the best pcst
+	best_pcst = -INFINITY;
+
+	for (int w = instance->UB; w > 1; w--) {
+
+		double minmin = 0; 
+		for (int v = 0; v < instance->num_vertices; v++) {
+			minmin = min(minmin, eta[v] - w * zeta[v]);
+		}
+
+		for (int v = 0; v < instance->num_vertices; v++) {
+			vertex_prizes[v] = eta[v] - w* zeta[v] - minmin;  // eta[v] is the prize of vertex v			
+		}
+
+		//// print vertex prizes
+		//printf("Vertex prizes: ");
+		//for (int v = 0; v < instance->num_vertices; v++) {
+		//	printf("%4.2lf ", vertex_prizes[v]);
+		//}
+		//printf("\n");
+
+		// compute edge costs 
+		for (int e = 0; e < instance->num_edges; e++) {
+			edge_costs[e] = -minmin;
+		}
+
+		//// print cost of edges
+		//printf("\nEdge costs: ");
+		//for (int e = 0; e < instance->num_edges; e++) {
+		//	printf("%4.2lf ", edge_costs[e]);
+		//}		
+		//printf("\n");
+		
+		// create a timer
+		Timer timer; 
+		timer.setStartTime();
+		this->instance->pcst
+			->set_upper_bound(w)
+			->reset_num_vertices_edges()
+			->reset_active_status()
+			->set_roots(0, roots_pcst)
+			->set_vertex_prizes(this->vertex_prizes)
+			->set_edge_costs(this->edge_costs)
+			//->set_log(true)	
+			//->print_instance()
+			//->reduce_graph()
+			->make_aborescence_instance();
+
+		timer.setEndTime();
+		double elapsed_time = timer.calcElaspedTime_sec();
+		//printf("Time elapsed Prepare: %4.3f\n", elapsed_time);
+
+
+		timer.setStartTime();
+		// init the aborescence instance
+		this->aborescence
+			->Init(this->instance->pcst, theta -minmin)
+			->AddConstraintsBranching(node);
+
+		
+
+		// if force_new_tree is true, we add the no good cuts to the aborescence instance
+		if (force_new_tree) {
+			this->aborescence->AddNoGoodCuts(num_trees_to_add, trees_to_add);
+		}
+
+		// run the aborescence instance	
+		this->aborescence->force_silent = false;
+		AborSol** abor_opt = this->aborescence->Run(zeta, w, log);
+
+		timer.setEndTime();
+		elapsed_time = timer.calcElaspedTime_sec();
+		//printf("Time elapsed Solve: %4.3f\n", elapsed_time);
+
+		// update best pcst 
+		if (abor_opt[0]->value > best_pcst) {
+			best_pcst = abor_opt[0]->value;
+		}
+		
+		// if value is zero and we have already added a tree -> stop
+		if (abor_opt[0]->value < 0.001 && num_trees_to_add > 4) {
+			w = abor_opt[0]->tree->weight;
+			continue;
+		}
+
+		// print the cost of tree
+		//printf("Abor objective value [%7d]: %6.2lf | %6.2lf \n", w, abor_opt->value, abor_opt->value_f);
+		for (int sol = 0; sol < MAX_ABOR_SOL; sol++) {
+			if (abor_opt[sol]->value < 0.001) break;
+			// if abor_opt value is greater than zero, then we add a copy of the associated tree to the list of trees to add
+			if (abor_opt[sol]->value >= 0.001 && add_trees) {
+
+				// check if the tree is already in the list of trees to add
+				bool added = false;
+
+				// check if the tree has already been added 
+				for (int t = 0; t < num_trees_to_add; t++) {
+					if (memcmp(trees_to_add[t]->bin_vertices, abor_opt[sol]->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY) == 0) {
+						added = true;
+						break;
+					}
+				}
+
+				// if the tree is not already added, we add it
+				if (!added) {
+					//if (true) {
+						// create a new tree
+					_small_tree* tree = new _small_tree();
+
+					// copy bin_vertices
+					memcpy(tree->bin_vertices, abor_opt[sol]->tree->bin_vertices, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+
+					// set the weight of the tree
+					tree->weight = abor_opt[sol]->tree->weight;
+
+					// add the tree to the list of trees to add
+					trees_to_add[num_trees_to_add++] = tree;
+
+					//// print the cost of tree
+					printf("Abor objective value [%7d]: %6.2lf | %6.2lf \t", w, abor_opt[sol]->value, abor_opt[sol]->value_f);
+
+					//// print the tree
+					tree->print_vertices(this->instance);					
+				}
+			}
+		}
+
+		// Jump if the tree is already added
+		if (abor_opt[0]->value >= 0.001) {
+			w = abor_opt[0]->tree->weight; // set the weight of the tree to the current weight
+		}
+	}
 
 	// print the best pcst
-	printf("**************  pricing_problem->Best PCST: %4.2lf\n", best_pcst);
+	//printf("Best PCST: %4.2lf\n", best_pcst);
 
-	return this;
+	return best_pcst;
 }

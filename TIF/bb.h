@@ -76,7 +76,7 @@ public:
 	~bb();
 
 	// run the branch and bound
-	bb* Run();
+	bb* Run(int time_limit);
 
 	// branch the node
 	void branch(_node_t* node);
@@ -110,6 +110,9 @@ public:
 
 	// add singleton trees
 	void add_singlton_trees();
+
+	// add single-edge trees
+	void add_single_edge_trees();
 
 };
 

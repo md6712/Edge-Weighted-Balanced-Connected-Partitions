@@ -1,4 +1,4 @@
-#include "CG.h"
+﻿#include "CG.h"
 #include <ilcplex/ilocplex.h>
 #include "binary.h"
 #include "CGCallBack.h"
@@ -53,18 +53,36 @@ CG::~CG() {
 
 CG* CG::Run_BP() {
 	// create a root node 
-	BP_node* root = new BP_node();	
+	root = new BP_node();	
+
 	root->next = nullptr;
 	root->lvl = 0;
 	root->LB = 0;
-	root->UB = instance->UB;
+	root->n_trees = instance->select_trees_for_CG.size();
+	root->number = 1;
 
-	Run_CG(root);
+	// column generation timer
+	Timer timer_CG;
+
+	// set start time
+	timer_CG.setStartTime();
+	Run_CG(root, timer_CG);
 
 	// create a temp node --- only a pointer 
 	BP_node* temp; 
 
-	while (root != nullptr && root->LB + 0.001 < instance->UB - 1) {
+	int number_of_nodes = 1; // number of nodes in the list	
+
+	bool time_limit_reached = false;
+	// check if timer has reached the time limit
+	timer_CG.setEndTime();
+	double elapsedTime = timer_CG.calcElaspedTime_sec();
+	if (elapsedTime > TIME_LIMIT) {
+		time_limit_reached = true;
+	}
+
+	while (!time_limit_reached && root != nullptr && root->LB + 0.001 < instance->UB - 1) {
+
 		// copy root into two child nodes
 		BP_node* node_L = new BP_node();
 		BP_node* node_R = new BP_node();
@@ -72,34 +90,61 @@ CG* CG::Run_BP() {
 		memcpy(node_L, root, sizeof(BP_node));
 		memcpy(node_R, root, sizeof(BP_node));
 
-		int u = best_pair[0];
-		int v = best_pair[1];
+		int u = root->branch_pair[0];
+		int v = root->branch_pair[1];
 
 		// set the branch rule u and v apart 
-		node_L->branch[node_L->lvl].u = u;
-		node_L->branch[node_L->lvl].v = v;
-		node_L->branch[node_L->lvl].rule = CG_branch_rule::apart;
-		node_L->lvl += 1;
+		node_L->branch[root->lvl].u = u;
+		node_L->branch[root->lvl].v = v;
+		node_L->branch[root->lvl].rule = CG_branch_rule::apart;
+		node_L->lvl = root->lvl + 1;
+		node_L->number = ++ number_of_nodes;
 
 		// run column generation
-		Run_CG(node_L);
+		Run_CG(node_L, timer_CG);
+
+		// check if timer has reached the time limit
+		timer_CG.setEndTime();
+		elapsedTime = timer_CG.calcElaspedTime_sec();
+		if (elapsedTime > TIME_LIMIT) {
+			break;
+		}
+
+		// check if the node LB is not less than the parent lower bound
+		if (node_L->LB < root->LB - 0.001) {
+			printf("ERROR: Node LB %f < Parent LB %f \n", node_L->LB, root->LB);
+			break;
+		}
 
 		// add the node to the sorted linked list if the lower bound is less than the upper bound
 		if (node_L->LB+0.001 > instance->UB) {
 			delete node_L;					
 		}
 		else {
-			AddNodeSorted(node_L);
-		}		
+			AddNodeSorted(node_L);			
+		}			
 
 		// set the branch rule u and v together
-		node_R->branch[node_R->lvl].u = u;
-		node_R->branch[node_R->lvl].v = v;
-		node_R->branch[node_R->lvl].rule = CG_branch_rule::together;
-		node_R->lvl += 1;
+		node_R->branch[root->lvl].u = u;
+		node_R->branch[root->lvl].v = v;
+		node_R->branch[root->lvl].rule = CG_branch_rule::together;
+		node_R->lvl = root->lvl + 1;
+		node_R->number = ++number_of_nodes;
 
 		// run column generation
-		Run_CG(node_R);			
+		Run_CG(node_R, timer_CG);
+		// check if timer has reached the time limit
+		timer_CG.setEndTime();
+		elapsedTime = timer_CG.calcElaspedTime_sec();
+		if (elapsedTime > TIME_LIMIT) {
+			break;
+		}
+
+		// check if the node LB is not less than the parent lower bound
+		if (node_R->LB < root->LB - 0.001) {		
+			printf("ERROR: Node LB %f < Parent LB %f \n", node_R->LB, root->LB);
+			break;
+		}
 
 		// add the node to the sorted linked list if the lower bound is less than the upper bound		
 		if (node_R->LB+0.001 > instance->UB) {
@@ -112,21 +157,40 @@ CG* CG::Run_BP() {
 		// move to next node after root and delete root	
 		temp = root;
 		root = root->next;
+		if (root == nullptr) {			
+			printf("No more nodes in the list\n");
+			root = temp;
+			root->LB = instance->UB; // set the lower bound to upper bound
+			break;
+		}
 		delete temp;
+		PrintNodeList(root);
+
+		// check if timer has reached the time limit
+		timer_CG.setEndTime();
+		elapsedTime = timer_CG.calcElaspedTime_sec();
+		if (elapsedTime > TIME_LIMIT) {
+			break;
+		}
 	} 
-	
+		
+	instance->_opt = instance->UB; 
+	if (root != nullptr) {
+		instance->_gap = (instance->UB - root->LB+0.001) / instance->UB;
+		delete root;
+	}
+	else {
+		instance->_gap = 0;
+	}
 
 	return this;
 }
 
 
 // run
-CG* CG::Run_CG(BP_node* node) {
+CG* CG::Run_CG(BP_node* node, Timer timer_CG) {
 
-	Impose_Braching(node);	
-
-	// print model
-	PrintModel();
+	Impose_Braching(node);		
 
 	Timer timer;
 
@@ -135,7 +199,8 @@ CG* CG::Run_CG(BP_node* node) {
 	double elapsedtimePricingPCST = 0;
 
 	int itr = 0;
-
+	int last_upper_bound_update_num_trees = this->instance->select_trees_for_CG.size();
+	int min_tree_added_trigger_upperbound = 20;
 
 	while (true)
 	{
@@ -145,9 +210,21 @@ CG* CG::Run_CG(BP_node* node) {
 		timer.setEndTime();
 		elapsedtimeMaster += timer.calcElaspedTime_sec();
 
-		// print the solution
-		PrintSol();
+		if (opt == -1) {
+			// if the model is infeasible, we add artificial columns
+			AddArtificialColumns(node);
+			continue;
+		}
 
+		// print the solution
+		//PrintSol();
+
+		printf("\n ***** Master problem itr = %4d  ***** Elapsed  %4.2f %4.2f %4.2f \n", itr, elapsedtimeMaster, elapsedtimePricing, elapsedtimePricingPCST);
+
+		// print the objective value + num_trees
+		double obj = cplex.getObjValue();
+		printf("obj = %3.2f \t #trees = %d\n", obj, this->instance->select_trees_for_CG.size());
+		
 		dualCover = IloNumArray(env, this->instance->num_vertices);
 		dualZ = IloNumArray(env, this->instance->num_vertices);
 		dualKnapsack = IloNum(0);
@@ -157,18 +234,18 @@ CG* CG::Run_CG(BP_node* node) {
 		cplex.getDuals(dualCover, Cover);
 		cplex.getDuals(dualZ, Z);
 
-		// print duals
-		printf_s("dualCover\t = ");
-		for (int v = 0; v < this->instance->num_vertices; v++) {
-			printf_s("%3.2f  ", dualCover[v]);
-		}
-		printf_s("\n");
-		printf_s("dualZ \t\t = ");
-		for (int v = 0; v < this->instance->num_vertices; v++) {
-			printf_s("%3.2f  ", dualZ[v]);
-		}
-		printf_s("\n");
-		printf_s("dualKnapsack\t = %3.2f\n", dualKnapsack);
+		//// print duals
+		//printf_s("dualCover\t = ");
+		//for (int v = 0; v < this->instance->num_vertices; v++) {
+		//	printf_s("%3.2f  ", dualCover[v]);
+		//}
+		//printf_s("\n");
+		//printf_s("dualZ \t\t = ");
+		//for (int v = 0; v < this->instance->num_vertices; v++) {
+		//	printf_s("%3.2f  ", dualZ[v]);
+		//}
+		//printf_s("\n");
+		//printf_s("dualKnapsack\t = %3.2f\n", dualKnapsack);
 
 		// set dual values in the pricing problem
 		timer.setStartTime();
@@ -190,15 +267,21 @@ CG* CG::Run_CG(BP_node* node) {
 
 		// solve the sub-problem exact
 
-		// compute time
+		//Timer timer_pricing;
+		//timer_pricing.setStartTime();
+		//// compute time
 		//pricing_problem->Run();
+		//timer_pricing.setEndTime();
+		//double elapsedtimePricingA = timer_pricing.calcElaspedTime_sec();
+		//printf("\n ***** Pricing problem itr = %4d  ***** Elapsed  %4.2f \n", itr, elapsedtimePricingA);
+
 
 		//_small_tree* tree = pricing_problem->GetTree(); // get the tree associated to the optimal solution		
 
-		// print the solution
+		//// print the solution
 		//pricing_problem->PrintSol();
 
-		// print the tree
+		//// print the tree
 		//tree->print_vertices(this->instance);			
 
 		timer.setEndTime();
@@ -212,18 +295,33 @@ CG* CG::Run_CG(BP_node* node) {
 
 
 		// if there is any tree to be added, add them 
-		if (pricing_problem->num_trees_to_add > 0 && pricing_problem->best_pcst > 0.001) {
+		if (pricing_problem->num_trees_to_add > 0 && pricing_problem->best_pcst >= 0.001) {
 			for (int i = 0; i < pricing_problem->num_trees_to_add; i++) {
 				// get the tree
 				_small_tree* tree = pricing_problem->trees_to_add[i];
+
 				// add the tree to the instance
 				this->instance->select_trees_for_CG.push_back(tree);
 
 				// print the tree
-				tree->print_vertices(this->instance);
+				//tree->print_vertices(this->instance);
 
 				// add the variable to the model
 				AddVar(this->instance->select_trees_for_CG.size() - 1, false);
+			}
+
+			// if number of trees added is larger than the last upper bound update, update the upper bound
+			if (this->instance->select_trees_for_CG.size() - last_upper_bound_update_num_trees > min_tree_added_trigger_upperbound) {
+				
+				int previous_UB = instance->UB; // save previous upper bound
+				UpdateUB(); // update upper bound				
+				
+				// if upper bound is not updated
+				if (instance->UB < previous_UB) {				
+					printf("\n ***** Update UB: %d -> %d\n", previous_UB, instance->UB);
+				}
+
+				last_upper_bound_update_num_trees = this->instance->select_trees_for_CG.size();
 			}
 		}
 		else {
@@ -231,71 +329,191 @@ CG* CG::Run_CG(BP_node* node) {
 			break;
 		}		
 
-		// print all elapsed time
-		printf("elapsedtimeMaster = %f\n", elapsedtimeMaster);
-		printf("elapsedtimePricing = %f\n", elapsedtimePricing);
-		printf("elapsedtimePricingPCST = %f\n", elapsedtimePricingPCST);
+		//// print all elapsed time
+		//printf("elapsedtimeMaster = %f\n", elapsedtimeMaster);
+		//printf("elapsedtimePricing = %f\n", elapsedtimePricing);
+		//printf("elapsedtimePricingPCST = %f\n", elapsedtimePricingPCST);
 
+
+		// check if timer has reached the time limit
+		timer_CG.setEndTime();
+		double elapsedTime = timer_CG.calcElaspedTime_sec();
+		if (elapsedTime > TIME_LIMIT) {
+			return this;
+		}
 	}
 
-	// print elapsed time
-	printf("elapsedtimeMaster = %f\n", elapsedtimeMaster);
-	printf("elapsedtimePricing = %f\n", elapsedtimePricing);
-	printf("elapsedtimePricingPCST = %f\n", elapsedtimePricingPCST);
+	//// print elapsed time
+	//printf("elapsedtimeMaster = %f\n", elapsedtimeMaster);
+	//printf("elapsedtimePricing = %f\n", elapsedtimePricing);
+	//printf("elapsedtimePricingPCST = %f\n", elapsedtimePricingPCST);
 
 	// compute the total assignment
-	ComputeTotalAssignment();
+	ComputeTotalAssignment(node);
 
-	// print the total assignment
+	//// print the total assignment
 	PrintTotalAssignment();
 
 	// lower bound of the node is equal the optimal value of the master
 	node->LB = cplex.getObjValue();
 	
-	//if (node->LB < instance->UB) {
-	//	
-	//	// remove all variables
-	//	RemoveXVars();
-
-	//	// each tree add x as an integer variable
-	//	for (int i = 0; i < this->instance->select_trees_for_CG.size(); i++) {
-	//		AddVar(i, true);
-	//	}
-	//	model.add(x);
-
-	//	// solve the master with integer variables
-	//	timer.setStartTime();
-	//	Cplex::Run();
-	//	timer.setEndTime();
-
-	//	int UB = (int) (cplex.getObjValue() + 0.001);
-
-	//	if (UB < instance->UB) {
-	//		instance->UB = UB;
-	//		node->UB = UB;
-	//	}
-	//	else {
-	//		node->UB = instance->UB;
-	//	}
-
-	//	// reverse the variables
-	//	RemoveXVars();
-
-	//	for (int i = 0; i < this->instance->select_trees_for_CG.size(); i++) {
-	//		AddVar(i, false);
-	//	}
-	//	model.add(x);
-	//}
+	if (node->LB < instance->UB) {		
+		int previous_UB = instance->UB; // save previous upper bound
+		UpdateUB();
+		// if upper bound is not updated
+		if (instance->UB < previous_UB) {
+			printf("\n ***** Update UB: %d -> %d\n", previous_UB, instance->UB);
+		}
+	}
 
 	// if lower bound is less than upper bound - 1 branch
 
-	if (node->LB + 0.001 < instance->UB - 1) {		
-		// copy the best pair of vertices for branching; this is used for Ryan Foster branching
-		node->branch_pair[0] = best_pair[0];
-		node->branch_pair[1] = best_pair[1];		
+	if (node->LB + 0.001 < instance->UB - 1) {
+		// if the total assignment of the best pair is not integer
+
+		double total_assignment = matrix_total_assignment[best_pair[0]][best_pair[1]];
+
+		if (total_assignment > 0.001 && total_assignment < 0.999) {
+			node->branch_pair[0] = best_pair[0];
+			node->branch_pair[1] = best_pair[1];
+		}		
+		else {
+			// integer solution has found
+			node->branch_pair[0] = -1;
+			node->branch_pair[1] = -1;
+
+			// update UB
+			instance->UB = node->LB;
+		}
 	}
 
+	// set the number of trees in the node
+	node->n_trees = instance->select_trees_for_CG.size();
+
+	// print node 
+	PrintNode(node);
+
 	return this;
+}
+
+void CG::AddArtificialColumns(BP_node* node) {
+
+	PrintNode(node);
+	
+	// create a small tree including all vertices as far as rules allow
+	_small_tree** small_tree = new _small_tree*[instance->num_trees];
+
+	int vertices_to_include[5];
+	bool* vertex_selected = new bool[this->instance->num_vertices];
+	memset(vertex_selected, 0, sizeof(bool) * this->instance->num_vertices);
+	
+	int current_tree = 0; // current tree index
+
+	while (current_tree < instance->num_trees){
+		small_tree[current_tree] = new _small_tree();
+		for (int v1 = 0; v1 < this->instance->num_vertices; v1++) {
+
+			if (vertex_selected[v1]) continue;
+
+			int n_vertices_to_include = 0;
+
+			// check if including the vertex doesnt violate all // the branching rules
+			bool include_vertex = true;
+			for (int i = 0; i < node->lvl; i++) {
+				// branch u an v
+				int u = node->branch[i].u;
+				int v = node->branch[i].v;
+
+				if (u == v1 || v == v1) {
+					int u1 = (u == v1) ? v : u; // get the other vertex
+
+					if (node->branch[i].rule == CG_branch_rule::apart) {
+						if (checkbin(small_tree[current_tree]->bin_vertices, u1)) {
+							// if the rule is apart, we can include the vertex only if the other vertex is not included
+							include_vertex = false;
+							break;
+						}
+					}
+					else if (node->branch[i].rule == CG_branch_rule::together) {
+						// if the rule is together, we can include the vertex only if the other vertex is included
+						vertices_to_include[n_vertices_to_include++] = u1; // add the other vertex to the list of vertices to include
+					}
+				}
+			}
+
+			if (include_vertex) {
+				// if the vertex can be included, add it to the small tree
+				addbin(small_tree[current_tree]->bin_vertices, v1);
+				vertex_selected[v1] = true; // mark the vertex as selected
+
+				// add each vertex to include
+				for (int i = 0; i < n_vertices_to_include; i++) {
+					addbin(small_tree[current_tree]->bin_vertices, vertices_to_include[i]);
+					vertex_selected[vertices_to_include[i]] = true; // mark the vertex as selected
+				}
+			}
+		}
+		
+		current_tree++;
+	}
+
+
+
+	// print trees
+	for (int i = 0; i < current_tree; i++) {
+		small_tree[i]->weight = 1000; // reset the weight		
+		small_tree[i]->print_vertices(this->instance);
+
+		//add to the select_trees_for_CG
+		this->instance->select_trees_for_CG.push_back(small_tree[i]);
+		AddVar(this->instance->select_trees_for_CG.size() - 1, false); // add the variable to the model
+	}
+}
+
+// update upper bound
+void CG::UpdateUB() {
+	// remove all variables
+	RemoveXVars();
+
+	// each tree add x as an integer variable
+	for (int i = 0; i < this->instance->select_trees_for_CG.size(); i++) {
+		AddVar(i, true);
+	}
+	model.add(x);
+
+	// solve the master with integer variables	
+	Cplex::Run();	
+
+	int UB = (int)(cplex.getObjValue() + 0.001);
+
+	if (UB < instance->UB) {
+		instance->UB = UB;
+	}
+
+	// reverse the variables
+	RemoveXVars();
+
+	// remove all trees that have weight larger than UB
+	for (int i = 0; i < this->instance->select_trees_for_CG.size();) {
+		if (this->instance->select_trees_for_CG[i]->weight > instance->UB) {
+			_small_tree* tree = this->instance->select_trees_for_CG[i]; // get the tree
+			this->instance->select_trees_for_CG.erase(this->instance->select_trees_for_CG.begin() + i); // remove the tree from the list
+			delete tree; // delete the tree
+		}
+		else {
+			i++;
+		}
+	}
+
+	for (int i = 0; i < this->instance->select_trees_for_CG.size(); i++) {
+		AddVar(i, false);
+	}
+	model.add(x);
+
+	// reset cplex
+
+	cplex.end();
+	cplex = IloCplex(model);
 }
 
 // print model
@@ -456,10 +674,6 @@ CG* CG::Impose_Braching(BP_node* node) {
 					x[i].setLB(0);
 					x[i].setUB(0);
 				}
-				else {
-					x[i].setLB(0);
-					x[i].setUB(1);
-				}
 			}
 			else {
 				// see if the tree contains one of the vertices but not both, then set the bounds of the variable to 0
@@ -472,21 +686,25 @@ CG* CG::Impose_Braching(BP_node* node) {
 					x[i].setLB(0);
 					x[i].setUB(0);
 				}
-				else {
-					// check if the tree contains both vertices, then set the bounds of the variable to 1
-						x[i].setLB(0);
-						x[i].setUB(1);
-				}
 			}
 		}
 	}
 	
+	// print bounds for variable x
+	for (int i = 0; i < x.getSize(); ++i) {
+		double lb = x[i].getLB(); // ✅ Valid
+		double ub = x[i].getUB(); // ✅ Valid
+		//printf("x[%d] = (%.2f, %.2f)\n", i, lb, ub);
+	}
+
+
+
 	return this;
 }
 
 
 // compute total assignment
-void CG::ComputeTotalAssignment() {
+void CG::ComputeTotalAssignment(BP_node* node) {
 	// instance g
 	_g* g = instance;
 	// compute the total assignment
@@ -494,6 +712,13 @@ void CG::ComputeTotalAssignment() {
 	// set best pair
 	best_pair[0] = 0;
 	best_pair[1] = 1;
+
+	// reset total assignments
+	for (int i = 0; i < g->num_vertices; i++) {
+		for (int j = 0; j < g->num_vertices; j++) {
+			matrix_total_assignment[i][j] = 0;
+		}
+	}
 
 	for (int i = 0; i < g->num_vertices; i++) {
 		for (int j = i+1; j < g->num_vertices; j++) {
@@ -513,11 +738,33 @@ void CG::ComputeTotalAssignment() {
 			// if distance of the total assignment from 0.5 is less than 0.5, assign the pair to best pair. 
 			
 			if (fabs(matrix_total_assignment[i][j] - 0.5) < fabs(matrix_total_assignment[best_pair[0]][best_pair[1]] - 0.5)) {
-				best_pair[0] = i;
-				best_pair[1] = j;
+				// check if it is not part of previous rules
+
+				bool is_part_of_previous_rules = false;
+				for (int r = 0; r < node->lvl; r++) {
+					if ((node->branch[r].u == i && node->branch[r].v == j) || (node->branch[r].u == j && node->branch[r].v == i)) {
+						is_part_of_previous_rules = true;
+						break;
+					}
+				}
+
+				if (!is_part_of_previous_rules) {
+					best_pair[0] = i;
+					best_pair[1] = j;
+				}				
 			}
 		}
 	}	
+}
+
+// print node
+void CG::PrintNode(BP_node* node) {
+	// print the node
+	printf("Node %d: Lvl %d \t LB = %3.2f \t #trees = %d \n", node->number, node->lvl, node->LB, node->n_trees);
+	for (int i = 0; i < node->lvl; i++) {
+		printf("branch[%d] = (%d,%d) \t rule = %d\n", i, node->branch[i].u, node->branch[i].v, node->branch[i].rule);
+	}
+	printf("***************\n\n");
 }
 
 // print total assignment
@@ -545,7 +792,7 @@ void CG::AddNodeSorted(BP_node* node) {
 	else {
 		BP_node* current = root;
 		BP_node* previous = nullptr;
-		while (current != nullptr && current->LB < node->LB) {
+		while (current != nullptr && node->LB+0.001>= current->LB) {
 			previous = current;
 			current = current->next;
 		}
@@ -557,5 +804,15 @@ void CG::AddNodeSorted(BP_node* node) {
 			node->next = current;
 			previous->next = node;
 		}
+	}
+}
+
+void CG::PrintNodeList(BP_node* root) {
+	// print the node list
+	BP_node* current = root;
+	printf("NodeList \n");
+	while (current != nullptr) {
+		printf("Node %d: %d \t LB = %3.2f \n", current->number, current->lvl, current->LB);
+		current = current->next;
 	}
 }

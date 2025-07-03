@@ -10,7 +10,9 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 		flowF->instance->_lb_root = getBestObjValue(); // LP relaxation bound at root		
 	}
 
-	return;
+	if (!flowF->user_cuts_active) {
+		return;
+	}
 
 	flowF->usercallback_count++;
 
@@ -18,6 +20,9 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 	double* opt_x = new double[flowF->instance->num_edges*2];
 	int* S = new int[flowF->instance->num_vertices];
 
+	// initialize the array opt_x and S
+	memset(opt_x, 0, sizeof(double) * flowF->instance->num_edges * 2);
+	memset(S, 0, sizeof(int) * flowF->instance->num_vertices);
 
 	// store the opt x values in the array opt_x
 	for (int a = 0; a < flowF->instance->num_edges*2; a++) {
@@ -27,21 +32,30 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 		}
 	}
 
+	//// print the opt x values
+	//for (int a = 0; a < flowF->instance->num_edges*2; a++) {
+	//	if (opt_x[a] > 0.00001) {
+	//		int u = flowF->instance->arcs[a][0];
+	//		int v = flowF->instance->arcs[a][1];
+	//		printf_s("x[%d,%d] = %lf\n", u, v, opt_x[a]);
+	//	}
+	//}
+
 	// create a capacity map
 	lemon::ListDigraph::ArcMap<double> capacity(flowF->instance->dg);
 	
 	// set capacity for arcs
 	for (lemon::ListDigraph::ArcIt a(flowF->instance->dg); a != INVALID; ++a) {	
 		double sum_x = 0;
-		if (flowF->instance->dg.id(flowF->instance->dg.source(a)) == flowF->instance->num_vertices) {
-			int v = flowF->instance->dg.id(flowF->instance->dg.target(a));
-			
+		int u = flowF->instance->dg.id(flowF->instance->dg.source(a));
+		int v = flowF->instance->dg.id(flowF->instance->dg.target(a));
+		if (flowF->instance->dg.id(flowF->instance->dg.source(a)) == flowF->instance->num_vertices) {	
 			for (int aa = 0; aa < flowF->instance->num_edges*2; aa++) {
 				if (flowF->instance->arcs[aa][0] == v) {
 					sum_x += opt_x[aa];
 				}
 			}
-			capacity[a] = sum_x;
+			capacity[a] = sum_x;		
 		}
 
 		// if v is the target
@@ -61,6 +75,9 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 			}
 			capacity[a] = sum_x;
 		}
+		
+		/*if (capacity[a] > 0.00001)			
+			printf_s("Arc %d -> %d: %lf\n", u, v, capacity[a]);*/
 	}
 
 
@@ -97,13 +114,21 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 				}
 			}
 
+			//// print S 
+			//printf("S: ");
+			//for (int j = 0; j < nS; j++) {
+			//	int v = S[j];
+			//	printf("%d ", v);
+			//}
+			//printf("\n");
+
 			// compute cost: for each arc that doesnt have a vertex in S,  add the cost to the cut
-			double cost = nS-1;
-			for (int e = 0; e < flowF->instance->num_edges*2; e++) {
+			double cost = nS;
+			for (int a = 0; a < flowF->instance->num_edges*2; a++) {
 				bool SinS = false; // if source in S
 				for (int j = 0; j < nS; j++) {
 					int v = S[j];
-					if (flowF->instance->arcs[e][0] == v) {
+					if (flowF->instance->arcs[a][0] == v) {
 						SinS = true;
 						break;
 					}
@@ -111,24 +136,28 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 				bool DinS = false;	// if dist in S
 				for (int j = 0; j < nS; j++) {
 					int v = S[j];
-					if (flowF->instance->arcs[e][1] == v) {
+					if (flowF->instance->arcs[a][1] == v) {
 						DinS = true;
 						break;
 					}
 				}
 				if (!SinS || !DinS) { // if the edge is outside the cut
-					for (int i = 0; i < flowF->instance->num_trees; i++) {
-						cost += opt_x[e];
-					}
+					
+					/*int u = flowF->instance->arcs[a][0];
+					int v = flowF->instance->arcs[a][1];
+					if (opt_x[a] > 0.00001)
+					printf("arc[%d, %d] : cost = %lf + %lf\n", u, v, cost, opt_x[a]);*/
+
+					cost += opt_x[a];
 				}
 			}
 
 			// print cost and cut
-			//printf("\nCost: %lf\n", cost);
+			//printf("Cost: %lf\n", cost);
 
 			// if cost < n - k - 1, add the cut
 
-			if (nS >= 1 && cost < flowF->instance->num_vertices - flowF->instance->num_trees + 1) {
+			if (nS >= 1 && cost + 0.001 < flowF->instance->num_vertices - flowF->instance->num_trees + 1) {
 				IloExpr cons(flowF->env);
 
 				if (flowF->printCuts)
@@ -183,9 +212,12 @@ ILOUSERCUTCALLBACK1(callbackuserFlow, FlowF*, flowF) {
 }
 
 
-FlowF::FlowF(_g* instance, bool redirect, bool linear) : Cplex(instance) {
+FlowF::FlowF(_g* instance, bool redirect, bool linear, bool mutual_exclusion_cycles) : Cplex(instance) {
 	this->printCycles = false;
 	this->printCuts = false;
+	this->user_cuts_active = false;
+	this->mutual_exclusion_cycles = false;
+	this->mutual_exclusion_cycles = mutual_exclusion_cycles;
 
 	if (linear) {
 		SetLinear();
@@ -288,6 +320,15 @@ FlowF* FlowF::SetInitSol() {
 	memset(sol_y, 0, sizeof(int) * instance->num_vertices);
 	memset(sol_f, 0, sizeof(int) * instance->num_edges*2);
 	memset(sol_f0, 0, sizeof(int) * instance->num_vertices);
+
+
+	// print trees
+	for (int i = 0; i < instance->num_trees; i++) {
+		// get the tree
+		_tree* tree = instance->trees_ub[i];
+		// print the tree
+		tree->PrintVerticesWeight();
+	}
 
 
 
@@ -575,7 +616,9 @@ void FlowF::AddCons() {
 //	AddConsThetaEta();
 
 	//
-	//AddConsCycleXY();
+	if (mutual_exclusion_cycles) {
+		AddConsCycleXY();
+	}	
 }
 
 // compute eta
@@ -675,7 +718,6 @@ void FlowF::AddConsSymmetryRootVertex() {
 			}
 		}
 	}
-
 }
 
 // add constraints for theta

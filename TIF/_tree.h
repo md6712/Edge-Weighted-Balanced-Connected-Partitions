@@ -106,6 +106,12 @@ public:
 	int weight;
 	int part_of_optimal = 0; // zero if not part of opt, larger if part of optimal;  the number indicate the iteration of the optimal solution
 	void print_vertices(void* g);
+
+
+
 	_small_tree();
+	~_small_tree();
+
+	void computeMST(void* g);
 };
 

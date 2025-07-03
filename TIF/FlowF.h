@@ -12,6 +12,10 @@ public:
 	int usercallback_count = 0;
 	int lazycallback_count = 0;
 
+	bool user_cuts_active = false;
+	bool mutual_exclusion_cycles = false;
+
+
 
 	// variables for cplex
 	IloNumVarArray x; 
@@ -25,7 +29,7 @@ public:
 	IloNumVar eta; // the objective function
 
 	// constructor and destructor
-	FlowF(_g*, bool, bool);
+	FlowF(_g*, bool, bool, bool);
 	~FlowF();
 
 	// define variables
@@ -81,6 +85,13 @@ public:
 
 
 	void SaveOpt();
+
+
+	// set user cuts active
+	void SetUserCutsActive(bool active) {
+		user_cuts_active = active;
+	}
+
 
 	// print the solution
 

@@ -2,7 +2,7 @@
 #include "Cplex.h"
 #include "CGPrice.h"
 #include "CG_branch.h"
-
+#include "timer.h"
 
 
 
@@ -13,7 +13,7 @@ class CG :
     public:
     //variables
     IloNumVarArray x;
-    IloNumVar z;
+    IloNumVar z;        
 
     // constraints 
     IloRange Knapsack;
@@ -31,7 +31,7 @@ class CG :
     CGPrice* pricing_problem;
 
     // run the model
-    CG* Run_CG(BP_node* node);
+    CG* Run_CG(BP_node* node, Timer timer_CG);
 
 	CG* Run_BP();
 
@@ -65,18 +65,30 @@ class CG :
 	// remove variables
 	void RemoveXVars();
 
+    // update UB
+    void UpdateUB();
+
     // add objective function
     void AddObj();
 
 
 	// void compute total assignment
-	void ComputeTotalAssignment();
+	void ComputeTotalAssignment(BP_node* node);
 
 	// void print total assignment
 	void PrintTotalAssignment();
 
     // add node to linked list
 	void AddNodeSorted(BP_node* node);
+
+	// add artificial columns
+	void AddArtificialColumns(BP_node* node);
+
+    // print NodeList   
+	void PrintNodeList(BP_node *root);
+
+    // print node
+	void PrintNode(BP_node* node);
 
 };
 

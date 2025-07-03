@@ -1,6 +1,21 @@
 #pragma once
 #define PCST_LARGE 100000
 
+#include <lemon/smart_graph.h>
+#include <lemon/preflow.h>
+#include <lemon/edmonds_karp.h>
+#include <lemon/concepts/digraph.h>
+#include <lemon/concepts/maps.h>
+#include <lemon/lgf_reader.h>
+#include <lemon/elevator.h>
+#include <lemon/list_graph.h>
+
+#include "_render.h"
+
+using namespace lemon;
+
+using Graph = ListDigraph;
+
 class _pcst
 {
 public:
@@ -29,6 +44,7 @@ public:
 
 	double** all_pairs_shortest_path; // 3D array to store the all pairs shortest path
 	double*** all_pairs_shortest_path_with_capacity; // 3D array to store the all pairs shortest path
+	int* shortest_path_vertex_choice;		// array to store the shortest path
 
 	bool* roots;					// array to store the roots of the tree
 
@@ -49,9 +65,19 @@ public:
 	bool* vertex_aborescence_active;		// array to store the active status of each vertex
 
 
+	// MST components 
+	ListGraph* graph_mst;
+	ListGraph::Node* nodes_mst;
+	ListGraph::Edge* edges_mst;
+	ListGraph::EdgeMap<double>* edge_weights_mst;
+	ListGraph::EdgeMap<bool>* mst;
+
 	// // Methods
 	_pcst(void* g);
 	~_pcst(void);
+
+	// heuristic
+	_pcst* heuristic(void* instance);
 
 	// print instane 
 	_pcst* print_instance();
@@ -78,10 +104,10 @@ public:
 	_pcst* floyd_warshal();
 
 	// check select budgeted shortest paths 
-	_pcst* check_select_budgeted_shortest_paths();
+	_pcst* check_select_budgeted_shortest_paths();	
 
 	// computed budgeted shortest path between two vertices
-	double budgeted_shortest_path(int u, int v, int w);
+	double budgeted_shortest_path(int u, int v, int w, bool positive_prizes);
 
 	// reduce the graph
 	_pcst* reduce_graph();
@@ -95,9 +121,6 @@ public:
 	// degree two prune
 	_pcst* degree_two_prune();
 
-	// solve
-	_pcst* solve();	
-
 	// print the graph
 	_pcst* print();
 
@@ -110,7 +133,7 @@ public:
 	// print the aborescence instance
 	_pcst* print_aborescence_instance();
 
-
+	
 
 	// set log	
 	_pcst* set_log(bool log) {

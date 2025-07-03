@@ -566,6 +566,9 @@ void CutF::AddCons() {
 
 	// bounded tree by UB
 	AddConsBoundByUB();
+
+	// add the forbidden pair edges
+	//AddConsForbiddenPairEdges();
 }
 
 void CutF::AddConsAtLeastOneEdge() {
@@ -739,6 +742,20 @@ void CutF::AddConsBoundByUB() {
 		}
 		model.add(exprObj <= instance->UB + 0.001);
 		exprObj.end();
+	}
+}
+
+void CutF::AddConsForbiddenPairEdges() {
+	// for each pair of edges, if their shortest path weight pairs larger than UB, they cannot be in the same tree
+	for (int i = 0; i < instance->num_trees; i++) {
+		for (int e = 0; e < instance->num_edges; e++) {
+			for (int f = e + 1; f < instance->num_edges; f++) {
+				if (instance->shortest_path_weight_edges[e][f] > instance->UB) {
+					sprintf_s(name, "ForbiddenPairEdges(%d,%d,%d)", e, f, i);
+					model.add(x[e][i] + x[f][i] <= 1).setName(name);
+				}
+			}
+		}
 	}
 }
 

@@ -38,14 +38,20 @@ struct _settings {
     int vertex_size;
     int edge_prob;
     int num_trees;
+	int duplication_num;
     bool read;
     bool linear;
+	bool flow_user_cut;
+	bool flow_mutual_exclusion_cycles;
     int min_size;
     int max_size;
     int min_prob;
     int max_prob;
     int min_trees;
     int max_trees;
+	int min_duplication;
+	int max_duplication;	
+    int BB_Heuristic_Time_Limit;
 };
 
 void testTree(_g* instance) {
@@ -159,6 +165,13 @@ _settings readSettings() {
         fgets(str, 10000, f);
 		fscanf(f, "%d", &num_trees);
 
+		// read duplication number
+		int duplication_num;
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		fscanf(f, "%d", &duplication_num);
+
 		RunType type = RunType::t_CUT;
         if (model == 1) {
             type = RunType::t_CUT;
@@ -169,25 +182,66 @@ _settings readSettings() {
 		else if (model == 3) {
             type = RunType::t_SETCOVER;
 		}        
-        else if (model == 6) {
+        else if (model == 4) {
 			type = RunType::t_CG;
         }
 
         // read linear 
-		bool linear = false;
 		fgets(str, 10000, f);
 		fgets(str, 10000, f);
 		fgets(str, 10000, f);
 		int linear_int;
 		fscanf(f, "%d", &linear_int);
+
+
+		// read flow user cut
+        fgets(str, 10000, f);
+        fgets(str, 10000, f);
+        fgets(str, 10000, f);
+        int flow_user_cut_int;
+        fscanf(f, "%d", &flow_user_cut_int);
+
+		// read flow mutual exclusion cycles
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		int flow_mutual_exclusion_cycles_int;
+		fscanf(f, "%d", &flow_mutual_exclusion_cycles_int);
+
+
+		// read bb heuristic time limit
+		int bb_heuristic_time_limit;
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		fgets(str, 10000, f);
+		fscanf(f, "%d", &bb_heuristic_time_limit);
 		
+		// linear
+        bool linear = false;
         if (linear_int > 0) {
-			linear = false;
+            linear = false;
+        }
+        else {
+            linear = true;
+        }
+
+		// flow user cut
+		bool flow_user_cut = false; 
+        if (flow_user_cut_int > 0) {
+            flow_user_cut = true;
+        }   
+		else {
+			flow_user_cut = false;
+		}
+
+		// flow mutual exclusion cycles
+		bool flow_mutual_exclusion_cycles = false;
+		if (flow_mutual_exclusion_cycles_int > 0) {
+			flow_mutual_exclusion_cycles = true;
 		}
 		else {
-			linear = true;
-		}	
-           
+			flow_mutual_exclusion_cycles = false;
+		}
 
         // setting created
         _settings settings;
@@ -196,9 +250,12 @@ _settings readSettings() {
         settings.edge_prob = edge_prob;
         settings.num_trees = num_trees;
         settings.read = true;
+		settings.BB_Heuristic_Time_Limit = bb_heuristic_time_limit;
 
 
         settings.linear = linear;
+		settings.flow_user_cut = flow_user_cut;
+		settings.flow_mutual_exclusion_cycles = flow_mutual_exclusion_cycles;
 
         if (settings.vertex_size == 0) {
             settings.min_size = 0;
@@ -227,6 +284,14 @@ _settings readSettings() {
             settings.max_trees = settings.num_trees;
         }
 
+        if (duplication_num == 0) {
+            settings.min_duplication = 1;
+            settings.max_duplication = 5;
+        }
+		else {
+			settings.min_duplication = duplication_num;
+			settings.max_duplication = duplication_num + 1;
+		}
 
         // string for vertex range
 		char vertex_size_text[100];
@@ -269,10 +334,6 @@ _settings readSettings() {
 		printf("Edge probability: %s\n", edge_prob_text);
 		printf("Num trees: %s\n", num_trees_text);
 		
-
-
-		
-
 		fclose(f);
 		return settings;
 	}    
@@ -311,7 +372,7 @@ int main()
                     continue;  // Skip if number of trees is greater than number of vertices
                 }
 
-                for (int ii = 1; ii < 5; ii++) {
+                for (int ii = settings.min_duplication; ii < settings.max_duplication; ii++) {
                     // timer
                     Timer timer;
                     timer.setStartTime();
@@ -337,7 +398,7 @@ int main()
                     g->setDiGraph();
 
                     // print the graph            
-                    g->printGraph();
+                    //g->printGraph();
 
                     // compute the upper bound
                     //g->computeUB();
@@ -353,14 +414,14 @@ int main()
                     timer_ub.setStartTime();
 
                     bb* model_1 = (new bb(g))
-                        ->Run();
+                        ->Run(settings.BB_Heuristic_Time_Limit);
                     delete model_1;
 
                     timer_ub.setEndTime();
-					double elapsedtime_ub = timer_ub.calcElaspedTime_sec();
+					double elapsedtime_ub = timer_ub.calcElaspedTime_sec();                    
 
                     // populate ub trees
-					g->populate_trees_ub_from_select_trees();
+                    g->populate_trees_ub_from_select_trees();
 
                     // compute coords
                     //g->ForcedDirectedLayout();
@@ -371,10 +432,10 @@ int main()
                     // print min separators
                     //g->PrintMinSeperators();
 
-                    // generate all trees 
-
-                    // run the algorithm
-                    
+                   
+                    // shortest path weight
+					g->compute_all_shortest_paths_weight();
+                                     
 
 					// timer for lower bound
                     Timer timer_lb;                   		
@@ -421,26 +482,24 @@ int main()
                     if (settings.model == RunType::t_CG) {
 
                         g->createMWCS();  // create the MWCS instance
-                        g->createPCST();  // create the PCST instance
+                        g->createPCST();  // create the PCST instance                                               
 
-                        bb* model_1 = (new bb(g))
-                            ->Run();
-                        delete model_1;
+                        // generate more trees
+						g->generateTreesForCG();
 
                         CG* model = ((CG*)(new CG(g, false, settings.linear))
-                            ->PrintModel()
                             ->SetQuiet()
                             )
-                            ->Run_BP()
-                            ->PrintSol();
+                            ->Run_BP();
                         delete model;
                     }
 
                     if (settings.model == RunType::t_FLOW) {
                         timer_lb.setStartTime();
                         if (!settings.linear) {
-                            FlowF* model = (new FlowF(g, false, true))
-                                ->Run();
+                            FlowF* model = (new FlowF(g, false, true, settings.flow_mutual_exclusion_cycles));
+                            model->SetUserCutsActive(settings.flow_user_cut);
+                            model->Run();
                             delete model;
 
                             g->_lp_bound = g->_opt;
@@ -449,10 +508,11 @@ int main()
                         elapsedtime_lb = timer_lb.calcElaspedTime_sec();
 
                         timer_model.setStartTime();
-                        FlowF* model = (new FlowF(g, false, settings.linear));
+                        FlowF* model = (new FlowF(g, false, settings.linear, settings.flow_mutual_exclusion_cycles));
                         if (!settings.linear) {
-                            model->SetInitSol();
+                            model->SetInitSol();                            
                         }
+						model->SetUserCutsActive(settings.flow_user_cut);						
 
                         model->Run();
       
@@ -491,15 +551,7 @@ int main()
                             //->PrintModel()
                             ->Run();
                         delete model;
-                    }
-
-                    // enumeration based algorithms 
-                    if (settings.model == RunType::t_BB) {
-                        bb* model = (new bb(g))
-                            ->Run();
-
-                        delete model;
-                    }
+                    }                   
 
                     //PartitionF* model = (new PartitionF(g, false))->Run();
                     timer.setEndTime();

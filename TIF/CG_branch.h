@@ -14,9 +14,10 @@ struct CG_branch {
 };
 
 struct BP_node {
+	int number; 
 	int lvl;
 	CG_branch branch[BP_MAX_DEPTH];
-	int UB;
+	int n_trees;
 	double LB;
 	int branch_pair[2];
 	BP_node* next;

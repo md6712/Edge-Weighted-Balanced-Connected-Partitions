@@ -99,5 +99,7 @@ class CGPrice :
 
 	// solve using prize collecting steiner tree
 	CGPrice* solve_pcst(BP_node* node , bool log);
+    double solve_pcst_fix_select_vertices(BP_node* node, bool log, bool force_new_tree, bool add_trees);
+    double solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, bool add_trees);
 };
 

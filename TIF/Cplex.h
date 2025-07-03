@@ -4,6 +4,8 @@
 #include <ilcplex/ilocplex.h>
 #include "_g.h"
 
+#define TIME_LIMIT 1800 // 30 minutes in seconds
+
 using namespace std;
 
 ILOSTLBEGIN
@@ -26,13 +28,15 @@ public:
 	bool integer = true;		
 	bool printCycles;
 	bool printCuts;
+
+	bool force_silent = false; // force silent mode
 	
 	char name[50];
 	char cut[500];
 	char cycle[500];
 	_g* instance;
 	IloEnv env;
-	IloModel model;
+	IloModel model;	
 	IloCplex cplex;
 
 	// set Integer vs Linear

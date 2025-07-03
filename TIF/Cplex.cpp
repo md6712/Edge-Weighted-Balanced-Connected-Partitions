@@ -1,12 +1,13 @@
 #include "Cplex.h"
 
+
 Cplex::Cplex(_g* instance)
-	: instance(instance),  // assign your graph
+	: instance(instance),  // assign your graph	
 	env(),               // construct env
 	model(env),          // construct model using env
-	cplex(model)         // construct cplex using model
+	cplex(model)        // construct cplex using model
 {
-
+	force_silent = false;
 }
 
 Cplex::~Cplex() {
@@ -16,7 +17,9 @@ Cplex::~Cplex() {
 }
 
 void Cplex::CplexSettings() {
-	//cplex.setOut(env.getNullStream());
+	if (force_silent) {
+		cplex.setOut(env.getNullStream());
+	}	
 
 	// turn off cplex warnings
 	cplex.setWarning(env.getNullStream());
@@ -31,7 +34,7 @@ void Cplex::CplexSettings() {
 	cplex.setParam(IloCplex::Threads, 1);
 		
 	// Set the time limit to 30 minutes
-	cplex.setParam(cplex.TiLim, 1800);
+	cplex.setParam(cplex.TiLim, TIME_LIMIT);
 	
 	// set number of threads	
 	cplex.setParam(cplex.Threads, 1);
@@ -101,6 +104,7 @@ void* Cplex::SetCutsDefault() {
 
 
 Cplex* Cplex::Run() {
+	force_silent = true; // reset force silent mode
 	CplexSettings();
 
 	if (cplex.solve()) {

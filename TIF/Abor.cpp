@@ -1,4 +1,4 @@
-#include "Abor.h"
+﻿#include "Abor.h"
 
 #include <lemon/edmonds_karp.h>
 #include <lemon/concepts/digraph.h>
@@ -359,6 +359,12 @@ Abor::Abor(_g* g, bool redirect, bool linear) :Cplex(g) {
 	opt = new AborSol();
 	opt->tree = new _small_tree();	
 
+	sols = new AborSol*[MAX_ABOR_SOL];
+	for (int i = 0; i < MAX_ABOR_SOL; i++) {		
+		sols[i] = new AborSol();
+		sols[i]->tree = new _small_tree();
+	}
+
 	// define coef
 	upper_bound_weight = IloNum(0);
 	vertex_prizes = IloNumArray(env, this->instance->num_vertices);
@@ -366,6 +372,7 @@ Abor::Abor(_g* g, bool redirect, bool linear) :Cplex(g) {
 
 	// initialize range array
 	branch_constraints = IloRangeArray(env);
+	no_good_cuts = IloRangeArray(env);
 
 	if (linear) {
 		SetLinear();
@@ -392,18 +399,27 @@ Abor::~Abor() {
 
 	// free range array
 	branch_constraints.end();	
+	no_good_cuts.end();
 
 	// free variables
 	delete opt->tree;
 	delete opt;
+
+	// free sols
+	for (int i = 0; i < MAX_ABOR_SOL; i++) {
+		delete sols[i]->tree;
+		delete sols[i];
+	}
+	delete[] sols;
 
 	// free variables
 	delete[] x_value;
 	delete[] y_value;	
 }
 
-AborSol* Abor::Run(bool printCuts = false) {
+AborSol** Abor::Run(IloNumArray zeta, double w, bool printCuts = false) {
 	this->printCuts = printCuts;
+	this->force_silent = true;
 	printCycles = false;
 
 	solution_found = false; // solution not found
@@ -418,20 +434,24 @@ AborSol* Abor::Run(bool printCuts = false) {
 	// set the early abort callback
 	//cplex.use(EarlyAbortCallback(env, 0.001, this));
 
+	// save many solutions
+	cplex.setParam(IloCplex::Param::MIP::Pool::Capacity, MAX_ABOR_SOL);  // pool size
+	cplex.setParam(IloCplex::Param::MIP::Pool::Replace, 0);   // replace worst (by objective)
+
 	// run the model
-	Cplex::Run();
+	Cplex::Run();	
 
 	// check if solution has not found 
 	if (!solution_found) {
 		// check if cplex is feasible or optimal	
 		if (cplex.getStatus() == IloAlgorithm::Feasible || cplex.getStatus() == IloAlgorithm::Optimal) {
 			// save the optimal solution			
-			SaveOpt();
+			SaveOpt(zeta,w);
 		}		
 	}
 
 
-	return opt;
+	return sols;
 }
 
 void Abor::DefVars() {
@@ -621,6 +641,41 @@ Abor* Abor::AddConstraintsBranching(BP_node* node) {
 
 }
 
+// add no-good cuts
+Abor* Abor::AddNoGoodCuts(int num_trees_to_add, _small_tree** trees_to_add) {
+	for (int i = 0; i < no_good_cuts.getSize(); ++i) {
+		model.remove(no_good_cuts[i]);
+		no_good_cuts[i].end(); // optional cleanup
+	}
+	no_good_cuts.clear();
+
+	
+	// for each tree to add, the sum of y values for the vertices, should be less than num vertices in that tree
+	for (int i = 0; i < num_trees_to_add; ++i) {
+
+		int num_vertices = 0;	
+
+		IloRange cons_range;
+		IloExpr cons(env);
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			if (checkbin(trees_to_add[i]->bin_vertices, v)) {
+				cons += y[v];
+				num_vertices++;
+			}
+		}
+		
+		cons_range = IloRange(env, -IloInfinity, cons, num_vertices - 1);
+
+		no_good_cuts.add(cons_range);
+		cons.end();
+	}
+
+	model.add(no_good_cuts);
+
+	return this;
+}
+
+
 Abor* Abor::Init(_pcst* pcst, double fixed_cost){
 	// set the vertex prizes; these prices are not used directly in the model, but used to dominate some cases
 	for (int v = 0; v < this->instance->num_vertices; v++) {
@@ -644,9 +699,23 @@ Abor* Abor::Init(_pcst* pcst, double fixed_cost){
 	for (int a = 0; a < this->instance->num_arcs; a++) {
 		obj += costs[a] * x[a] ;
 	}
+		
 	// set the objective function
 	objective.setExpr(obj - fixed_cost);
-	objective_constraint.setExpr(obj - fixed_cost >= 0);
+
+	// set the objective constraint
+	
+	model.remove(objective_constraint);
+	objective_constraint.end();
+
+	objective_constraint =
+		IloRange(env,
+			0.0,                   // lower bound  (≥ 0)
+			obj - fixed_cost,      // left-hand side
+			IloInfinity,           // no upper bound
+			"objective_constraint");
+
+	model.add(objective_constraint);
 	obj.end();
 
 
@@ -687,9 +756,18 @@ void Abor::ResetOpt() {
 	memset(opt->tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
 	opt->tree->weight = 0;
 	opt->value = -INFINITY;
+	opt->value_f = -INFINITY;
+
+	// reset sols
+	for (int i = 0; i < MAX_ABOR_SOL; i++) {
+		memset(sols[i]->tree->bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+		sols[i]->tree->weight = 0;
+		sols[i]->value = -INFINITY;
+		sols[i]->value_f = -INFINITY;
+	}
 }
 
-void Abor::SaveOpt() {
+void Abor::SaveOpt(IloNumArray zeta, double w) {
 	// save the optimal solution
 	for (int a = 0; a < this->instance->num_arcs; a++) {
 		if (cplex.isExtracted(x[a])) {
@@ -716,17 +794,91 @@ void Abor::SaveOpt() {
 
 	// loop over all vertices
 	for (int v = 0; v < this->instance->num_vertices; v++) {
-		if (y_value[v] > 0) {
+		if (y_value[v] > 0.5) {
 			addbin(opt->tree->bin_vertices, v);
 		}
 	}
 
 	// loop over all arcs
 	for (int a = 0; a < this->instance->num_arcs; a++) {
-		if (x_value[a] > 0) {
+		if (x_value[a] > 0.5) {
 			opt->tree->weight += this->instance->arcs[a][2];
 		}
 	}
+
+	// compute value_f
+	opt->value_f = cplex.getObjValue();
+
+	if (w != -1) {
+		int weight_diff = opt->tree->weight - w;
+
+		double sum_zeta = 0;
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			if (y_value[v] > 0.5) {
+				sum_zeta += zeta[v];
+			}
+		}
+
+		opt->value_f -= weight_diff * sum_zeta;		
+	}
+
+
+	IloInt nSol = cplex.getSolnPoolNsolns();
+
+	for (IloInt i = 0; i < nSol; ++i) {
+		// save the optimal solution
+		for (int a = 0; a < this->instance->num_arcs; a++) {
+			if (cplex.isExtracted(x[a])) {
+				x_value[a] = cplex.getValue(x[a], i);
+			}
+			else
+			{
+				x_value[a] = 0;
+			}
+		}
+
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			if (cplex.isExtracted(y[v])) {
+				y_value[v] = cplex.getValue(y[v], i);
+			}
+			else
+			{
+				y_value[v] = 0;
+			}
+		}
+
+		sols[i]->value = cplex.getObjValue(i);
+
+		// loop over all vertices
+		for (int v = 0; v < this->instance->num_vertices; v++) {
+			if (y_value[v] > 0.5) {
+				addbin(sols[i]->tree->bin_vertices, v);
+			}
+		}
+
+		// loop over all arcs
+		for (int a = 0; a < this->instance->num_arcs; a++) {
+			if (x_value[a] > 0.5) {
+				sols[i]->tree->weight += this->instance->arcs[a][2];
+			}
+		}
+
+		// compute value_f
+		sols[i]->value_f = sols[i]->value;
+
+		if (w != -1) {
+			int weight_diff = sols[i]->tree->weight - w;
+
+			double sum_zeta = 0;
+			for (int v = 0; v < this->instance->num_vertices; v++) {
+				if (y_value[v] > 0.5) {
+					sum_zeta += zeta[v];
+				}
+			}
+
+			sols[i]->value_f -= weight_diff * sum_zeta;
+		}					
+	}	
 }
 
 // print the solution

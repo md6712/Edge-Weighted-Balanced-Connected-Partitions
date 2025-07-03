@@ -68,6 +68,10 @@ class _g
 		int num_opt_edges;
 		int *start_edge_tree;
 
+		// all shortest path weight
+		int** shortest_path_weight; // 2D array to store the shortest path weight
+		int** shortest_path_weight_edges; // 2D array to store the shortest path weight for edges 
+
 		_coord* coords; // array to store the coordinates of the vertices
 
 		int** opt_vertices; // 2D array to store the vertices of the optimal solution - for each tree
@@ -155,8 +159,10 @@ class _g
 		void setDiGraph();	
 
 		// generate trees
-		void generateTrees();
+		void generateTrees();		
 		void generateSelectTrees();
+		void generateTreesForCG();
+		void addTreeToTreesForCGIfValid(_small_tree *tree);
 
 		void recomputeLB();
 
@@ -164,6 +170,9 @@ class _g
 		void DrawGraph(int* highlighted_edges = nullptr, int num_highlighted_edges = 0); // draw the graph
 
 		void populate_trees_ub_from_select_trees();
+
+
+		void compute_all_shortest_paths_weight();
 
 };
 

@@ -11,6 +11,7 @@ void _small_tree::print_vertices(void *g)
 {
 	_g* graph = (_g*)g;
 	printf("Tree: ");
+	printf("\t Weight: %d \t Opt: %d \t", weight, part_of_optimal);
 	for (int v = 0; v < graph->num_vertices; v++)
 	{
 		if (checkbin(bin_vertices, v))
@@ -19,11 +20,43 @@ void _small_tree::print_vertices(void *g)
 		}		
 	}
 	// print weight
-	printf("\t Weight: %d \t Opt: %d \n", weight, part_of_optimal);	
+	printf("\n");	
 }
 
+// constructor for the tree
 _small_tree::_small_tree() {
 	part_of_optimal = 0;
+	memset(bin_vertices, 0, sizeof(uint32_t) * SIZE_OF_VERTICES_BINARY);
+}
+
+// destructor for the tree
+_small_tree::~_small_tree() {
+	// nothing to do here, since we don't allocate any memory in the constructor
+}
+
+// compute MST 
+void _small_tree::computeMST(void* g)
+{
+	// convert to a _tree
+	_tree* tree = new _tree(g);
+
+	// copy the vertices from the binary representation
+	tree->CopyVertices(this->bin_vertices);	
+
+	// compute the minimum spanning tree		
+	tree->ComputeMST();		
+
+	// if weight is zero, then the tree is empty
+	if (tree->weight == 0) {
+		this->weight = MAXINT;
+	}
+	else {
+		// set the weight of the tree
+		this->weight = tree->weight;
+	}
+
+	// delete tree
+	delete tree;
 }
 
 _tree::_tree(void *instance)
@@ -116,7 +149,6 @@ void _tree::CopyVertices(int num_vertices, int* vertices)
 		}
 	}
 }
-
 
 // build graph by edges
 void _tree::InitTreeByEdges(int num_edges, int* edges) {

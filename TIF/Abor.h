@@ -2,8 +2,11 @@
 #include "Cplex.h"
 #include "CG_branch.h"
 
+#define MAX_ABOR_SOL 10
+
 struct AborSol {	
 	double value; // optimal value
+	double value_f; // actual cost value
 	_small_tree* tree; // tree associated to the solution
 };
 
@@ -11,6 +14,8 @@ class Abor :
     public Cplex
 {
 public:
+
+	
 
 	// variables
 	IloNumVarArray x; // x variables
@@ -35,6 +40,9 @@ public:
 	// range array for branch constraints
 	IloRangeArray branch_constraints; // branch constraints
 
+	// range array for no good cuts 
+	IloRangeArray no_good_cuts; // no good cuts
+
 	// arrays used in callback
 	double* x_value; // value of x variables
 	double* y_value; // value of y variables
@@ -45,6 +53,7 @@ public:
 
 	// solution 
 	AborSol *opt; 
+	AborSol** sols; // optimal solutions
 	bool solution_found; // solution found
 	
 
@@ -52,7 +61,7 @@ public:
 	Abor(_g* g, bool redirect, bool linear);
 	~Abor();
 	// run the algorithm
-	AborSol* Run(bool printCuts);
+	AborSol** Run(IloNumArray zeta, double w, bool printCuts);
 	// define variables
 	void DefVars();
 	void DefVarX();
@@ -81,7 +90,7 @@ public:
 
 
 	// void save solution
-	void SaveOpt();
+	void SaveOpt(IloNumArray zeta, double w);
 
 	// void reset solution
 	void ResetOpt();
@@ -94,6 +103,8 @@ public:
 
 
 	Abor* AddConstraintsBranching(BP_node* node);
+
+	Abor* AddNoGoodCuts(int num_trees_to_add, _small_tree** trees_to_add);
 
 };
 

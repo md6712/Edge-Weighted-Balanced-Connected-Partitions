@@ -90,6 +90,17 @@ _g::_g(int num_vertices, int num_edges, int num_trees, int duplication_num)
 	// trees for ub
 	trees_ub = std::vector<_tree*>();
 
+	// init all shortest path weight
+	shortest_path_weight = new int* [num_vertices];
+	for (int i = 0; i < num_vertices; i++) {
+		shortest_path_weight[i] = new int[num_vertices];
+	}
+
+	// init all shortest path weight for edges
+	shortest_path_weight_edges = new int* [num_edges];
+	for (int i = 0; i < num_edges; i++) {
+		shortest_path_weight_edges[i] = new int[num_edges];
+	}
 }
 
 _g::~_g()
@@ -192,6 +203,18 @@ _g::~_g()
 	if (pcst != nullptr) {
 		delete pcst;
 	}
+
+	// deallocate memory for shortest path weight
+	for (int i = 0; i < num_vertices; i++) {
+		delete[] shortest_path_weight[i];
+	}
+	delete[] shortest_path_weight;
+
+	// deallocate memory for shortest path weight for edges
+	for (int i = 0; i < num_edges; i++) {
+		delete[] shortest_path_weight_edges[i];
+	}
+	delete[] shortest_path_weight_edges;
 }
 
 void _g::readGraph()
@@ -839,8 +862,7 @@ void _g::setDiGraph() {
 	//}
 }
 
-
-// generate trees
+// 
 // the method only works for num_vertices < 32
 void _g::generateTrees() {
 
@@ -1039,6 +1061,97 @@ void _g::generateSelectTrees() {
 
 	// print the number of trees
 	std::cout << "Number of trees: " << trees.size() << std::endl;
+}
+
+// generate trees for CG
+void _g::generateTreesForCG() {
+
+
+	int* vertices = new int[num_vertices];
+
+	_small_tree* temp_tree = new _small_tree();
+
+	// loop over all trees in this->select_trees
+	int itr = 0; 
+	while (itr < 1000) {
+		// select a random tree from select trees	
+		int ran = rand(); 
+		int tree_index = ran % select_trees_for_CG.size();
+
+		_small_tree* tree = select_trees_for_CG[tree_index];
+		
+
+		int num_vertices = 0;
+
+		// copy the vertices of the tree to the vertices array
+		for (int i = 0; i < this->num_vertices; i++) {
+			if (checkbin(tree->bin_vertices, i)) {
+				vertices[num_vertices++] = i;
+			}
+		}
+		int v;
+
+		if (num_vertices > 2) {
+			// select one vertex from the tree
+			v = vertices[rand() % num_vertices];
+			memcpy(temp_tree, tree, sizeof(_small_tree));
+
+			removebin(temp_tree->bin_vertices, v); // remove the vertex from the tree
+
+			addTreeToTreesForCGIfValid(temp_tree); // add the tree to the select_trees_for_CG if valid
+		}
+
+		// select one vertex not in tree
+		v = rand() % num_vertices;
+		while (checkbin(tree->bin_vertices, v)) {
+			v = rand() % num_vertices;
+		}
+
+		// cpy the tree
+		memcpy(temp_tree, tree, sizeof(_small_tree));
+
+		// add vertex v to the tree
+		addbin(temp_tree->bin_vertices, v);
+
+		addTreeToTreesForCGIfValid(temp_tree); // add the tree to the select_trees_for_CG if valid			
+
+		itr++;
+	}
+
+	delete[] vertices;
+	delete temp_tree;
+
+}
+
+void _g::addTreeToTreesForCGIfValid(_small_tree* temp_tree) {
+	// check if temp tree is not in select_trees_for_CG
+	bool found = false;
+	for (int i = 0; i < select_trees_for_CG.size(); i++) {
+		if (memcmp(temp_tree->bin_vertices, select_trees_for_CG[i]->bin_vertices, sizeof(uint32_t) * binaryArrlength(num_vertices)) == 0) {
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+
+		// compute weight
+		temp_tree->computeMST(this);
+
+		// check if the weight of the tree is less than UB
+		if (temp_tree->weight <= UB) {
+
+			// print tree
+			temp_tree->print_vertices(this);
+
+			// create a new tree
+			_small_tree* new_tree = new _small_tree();
+			memcpy(new_tree, temp_tree, sizeof(_small_tree));
+
+			// add the tree to the select_trees_for_CG
+			select_trees_for_CG.push_back(new_tree);
+		}
+	}
 }
 
 // recompute LB 
@@ -1267,3 +1380,90 @@ void _g::populate_trees_ub_from_select_trees() {
 	}
 
 }
+
+// compute all shortest path weight
+void _g::compute_all_shortest_paths_weight() {
+
+	for (int i = 0; i < num_vertices; i++) {
+		for (int j = 0; j < num_vertices; j++) {
+			if (i == j) {
+				shortest_path_weight[i][j] = 0;
+			}
+			else {
+				shortest_path_weight[i][j] = 100000;
+			}
+		}
+	}
+
+	// initialize the shortest path weight; for each edge, the shortest path weight is the weight of the edge
+	for (int e = 0; e < num_edges; e++) {
+		int u = edges[e][0];
+		int v = edges[e][1];
+		shortest_path_weight[u][v] = edges[e][2];
+		shortest_path_weight[v][u] = edges[e][2];
+	}
+	
+	//// print shortest paths
+	//for (int i = 0; i < num_vertices; i++) {
+	//	for (int j = 0; j < num_vertices; j++) {
+	//		printf("%d ", shortest_path_weight[i][j]);
+	//	}
+	//	printf("\n");
+	//}
+
+	// use floyd warshall algorithm to compute the shortest path weight
+	for (int k = 0; k < num_vertices; k++) {
+		for (int i = 0; i < num_vertices; i++) {
+			for (int j = 0; j < num_vertices; j++) {
+				if (shortest_path_weight[i][k] + shortest_path_weight[k][j] < shortest_path_weight[i][j]) {
+					shortest_path_weight[i][j] = shortest_path_weight[i][k] + shortest_path_weight[k][j];
+				}
+			}
+		}
+	}
+
+	//// print shortest paths
+	//printf("\n"); printf("\n");
+	//
+	//for (int i = 0; i < num_vertices; i++) {
+	//	for (int j = 0; j < num_vertices; j++) {
+	//		printf("%d ", shortest_path_weight[i][j]);
+	//	}
+	//	printf("\n");
+	//}
+
+
+	// for each pair of edges, the shortest path for edges is the minimum distance between each pair of vertices
+	for (int e1 = 0; e1 < num_edges; e1++) {
+		for (int e2 = 0; e2 < num_edges; e2++) {
+			int u1 = edges[e1][0];
+			int v1 = edges[e1][1];
+			int u2 = edges[e2][0];
+			int v2 = edges[e2][1];
+			if (u1 == u2 || u1 == v2 || v1 == u2 || v1 == v2) {
+				shortest_path_weight_edges[e1][e2] = 0;
+			}
+			else {
+				// compute the minimum distance between each pair of vertices
+				shortest_path_weight_edges[e1][e2] = min(shortest_path_weight[u1][u2], shortest_path_weight[u1][v2]);
+				shortest_path_weight_edges[e1][e2] = min(shortest_path_weight_edges[e1][e2], shortest_path_weight[v1][u2]);
+				shortest_path_weight_edges[e1][e2] = min(shortest_path_weight_edges[e1][e2], shortest_path_weight[v1][v2]);				
+
+				shortest_path_weight_edges[e1][e2] += edges[e1][2] + edges[e2][2];
+			}
+		}
+	}
+
+	//// print shortest paths
+	//printf("\n"); printf("\n");
+	//
+	//for (int i = 0; i < num_edges; i++) {
+	//	for (int j = 0; j < num_edges; j++) {
+	//		printf("%d ", shortest_path_weight_edges[i][j]);
+	//	}
+	//	printf("\n");
+	//}
+
+}
+
+
