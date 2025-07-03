@@ -47,12 +47,17 @@ void _small_tree::computeMST(void* g)
 	tree->ComputeMST();		
 
 	// if weight is zero, then the tree is empty
-	if (tree->weight == 0) {
-		this->weight = MAXINT;
+	if (tree->isSpanningTree) {
+		if (tree->weight == 0) {
+			this->weight = MAXINT;
+		}
+		else {
+			// set the weight of the tree
+			this->weight = tree->weight;
+		}
 	}
 	else {
-		// set the weight of the tree
-		this->weight = tree->weight;
+		this->weight = MAXINT; // if the tree is not spanning, set the weight to MAXINT
 	}
 
 	// delete tree
@@ -251,9 +256,6 @@ void _tree::ComputeMST(bool *forbidden_edges)
 
 		// create a mst map
 		ListGraph::EdgeMap<bool> mst(graph, false);
-
-		// fix random seed for reproducibility
-		srand(0);
 
 		// compute the minimum spanning tree
 		kruskal(graph, edgeWeight, mst);

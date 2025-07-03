@@ -365,7 +365,7 @@ int main()
                 continue;  // Skip if number of edges is less than number of vertices
             }
 
-            for (int l = settings.min_trees; l < settings.max_trees; l++) {
+            for (int l = settings.min_trees; l < settings.max_trees; l+=2) {
                 int num_trees = k[l];  // Number of clusters
 
                 if ((double)num_vertices / 2 < num_trees) {
@@ -569,7 +569,7 @@ int main()
 					}
 
                     sprintf_s(outputline, 512,
-                        "%40s\t%d\t%d\t%d\t%d\t%d\t%d\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%d\t%d\t%d\t\n",
+                        "%40s\t%d\t%d\t%d\t%d\t%d\t%d\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%6.2lf\t%4d\t%4d\t%4d\t%4d\t\n",
                         g->getFilename(),       // %40s
                         num_vertices,           // %d
                         num_edges,              // %d
@@ -587,7 +587,8 @@ int main()
                         elapsedtime,            // %6.2lf
                         number_of_trees,    // %d                        
 						g->n_user_cuts,         // %d
-						g->n_lazy_cuts         // %d
+						g->n_lazy_cuts,         // %d
+                        g->num_bp_nodes						
                     );
                     fprintf_s(output, "%s", outputline);
                     printf("%s", outputline);					

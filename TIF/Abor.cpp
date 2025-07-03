@@ -186,7 +186,7 @@ ILOUSERCUTCALLBACK1(callbackuser3, Abor*, abor) {
 				// add the cut to the model
 				add(cons >= abor->y[v]).setName(abor->name);
 
-
+				cons.end();
 				if (abor->printCuts) {
 					printf_s(">= y[%d]\n", v);
 				}
@@ -338,6 +338,8 @@ ILOLAZYCONSTRAINTCALLBACK1(callbacklazy2, Abor*, abor) {
 				// add the cut to the model
 				add(cons >= abor->y[v]).setName(abor->name);
 
+				cons.end();
+
 				if (abor->printCuts) {
 					printf_s(">= y[%d]\n", v);
 				}
@@ -424,6 +426,9 @@ AborSol** Abor::Run(IloNumArray zeta, double w, bool printCuts = false) {
 
 	solution_found = false; // solution not found
 	ResetOpt(); // reset the optimal solution
+
+	cplex.clearUserCuts();
+	cplex.clearLazyConstraints();
 
 	// set the user callback
 	cplex.use(callbackuser3(env, this));
@@ -532,6 +537,7 @@ void Abor::AddConsUpperBound() {
 	// name
 	sprintf(name, "Cons_UpperBound");
 	// set the upper bound constraint
+	upper_bound.end();
 	upper_bound = IloRange(env, cons);
 	upper_bound.setName(name);
 	
@@ -683,6 +689,7 @@ Abor* Abor::Init(_pcst* pcst, double fixed_cost){
 	}
 	
 	// set the costs
+	costs.end();
 	costs = IloNumArray(env, this->instance->num_arcs);
 	for (int a = 0; a < this->instance->num_arcs; a++) {
 		if (pcst->arc_active[a])

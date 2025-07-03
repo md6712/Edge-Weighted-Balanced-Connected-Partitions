@@ -315,7 +315,7 @@ CGPrice::CGPrice(_g* g, bool redirect):Cplex(g) {
 
 	// set the number of trees to add
 	num_trees_to_add = 0;
-	trees_to_add = new _small_tree * [this->instance->UB];	
+	trees_to_add = new _small_tree * [this->instance->UB * 10]; // allocate memory for trees to add
 }
 
 // destructor
@@ -1163,6 +1163,10 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 
 	for (int w = instance->UB; w > 1; w--) {
 
+		//if (num_trees_to_add > 10) {
+		//	break;
+		//}
+
 		double minmin = 0; 
 		for (int v = 0; v < instance->num_vertices; v++) {
 			minmin = min(minmin, eta[v] - w * zeta[v]);
@@ -1238,17 +1242,24 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 		}
 		
 		// if value is zero and we have already added a tree -> stop
-		if (abor_opt[0]->value < 0.001 && num_trees_to_add > 4) {
+		if (abor_opt[0]->value < 0.001 && num_trees_to_add > 0) {
 			w = abor_opt[0]->tree->weight;
 			continue;
 		}
 
+
+
 		// print the cost of tree
 		//printf("Abor objective value [%7d]: %6.2lf | %6.2lf \n", w, abor_opt->value, abor_opt->value_f);
+
+		int min_w = 100000;
+		
 		for (int sol = 0; sol < MAX_ABOR_SOL; sol++) {
 			if (abor_opt[sol]->value < 0.001) break;
 			// if abor_opt value is greater than zero, then we add a copy of the associated tree to the list of trees to add
 			if (abor_opt[sol]->value >= 0.001 && add_trees) {
+
+				min_w = min(min_w, abor_opt[sol]->tree->weight);
 
 				// check if the tree is already in the list of trees to add
 				bool added = false;
@@ -1286,7 +1297,8 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 		}
 
 		// Jump if the tree is already added
-		if (abor_opt[0]->value >= 0.001) {
+		if (abor_opt[0]->value >= 0.001) {			
+			//w = min_w; // set the weight of the tree to the current weight
 			w = abor_opt[0]->tree->weight; // set the weight of the tree to the current weight
 		}
 	}

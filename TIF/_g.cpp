@@ -1066,6 +1066,17 @@ void _g::generateSelectTrees() {
 // generate trees for CG
 void _g::generateTreesForCG() {
 
+	//// all trees generated in this->select_trees_for_CG
+	//for (int i = 0; i < select_trees_for_CG.size(); i++) {
+	//	// print
+	//	select_trees_for_CG[i]->print_vertices(this);
+	//}
+	
+	// print all trees
+	std::cout << "Generating random trees for CG..." << std::endl;
+	
+	srand(2025);
+	
 
 	int* vertices = new int[num_vertices];
 
@@ -1073,27 +1084,46 @@ void _g::generateTreesForCG() {
 
 	// loop over all trees in this->select_trees
 	int itr = 0; 
-	while (itr < 1000) {
+	
+	//	B(n, k) = \left\lceil 100 \left(2n - 36 + \frac{ 3 }{1 + e^ { k - 5 }} \right) \right\rceil.
+	// n = num_vertices
+	// k = num_trees
+
+	int target_n_trees = (int)ceil(100 * (2 * num_vertices - 36 + 3 / (1 + exp(num_trees - 5))));			
+	int itrs_not_improving = 0; // number of iterations not improving the number of trees
+	int max_itrs_not_improving = 1000; // maximum number of iterations not improving the number of trees
+
+	while (true) {
+
+		int num_trees_for_CG_before = select_trees_for_CG.size();
+		if (num_trees_for_CG_before >= target_n_trees) {
+			break;
+		}
+
 		// select a random tree from select trees	
 		int ran = rand(); 
-		int tree_index = ran % select_trees_for_CG.size();
+		//printf("Random number: %d\n", ran);
+		int tree_index = ran % select_trees_for_CG.size();		
 
 		_small_tree* tree = select_trees_for_CG[tree_index];
+
+		// print the tree
+		/*printf("Reading ");
+		tree->print_vertices(this);*/
 		
-
-		int num_vertices = 0;
-
 		// copy the vertices of the tree to the vertices array
+		int num_vertices_in_tree = 0;
 		for (int i = 0; i < this->num_vertices; i++) {
 			if (checkbin(tree->bin_vertices, i)) {
-				vertices[num_vertices++] = i;
+				vertices[num_vertices_in_tree++] = i;
 			}
 		}
-		int v;
 
-		if (num_vertices > 2) {
+
+		int v;
+		if (num_vertices_in_tree > 2) {
 			// select one vertex from the tree
-			v = vertices[rand() % num_vertices];
+			v = vertices[rand() % num_vertices_in_tree];
 			memcpy(temp_tree, tree, sizeof(_small_tree));
 
 			removebin(temp_tree->bin_vertices, v); // remove the vertex from the tree
@@ -1102,9 +1132,9 @@ void _g::generateTreesForCG() {
 		}
 
 		// select one vertex not in tree
-		v = rand() % num_vertices;
+		v = rand() % this->num_vertices;
 		while (checkbin(tree->bin_vertices, v)) {
-			v = rand() % num_vertices;
+			v = rand() % this->num_vertices;
 		}
 
 		// cpy the tree
@@ -1113,10 +1143,30 @@ void _g::generateTreesForCG() {
 		// add vertex v to the tree
 		addbin(temp_tree->bin_vertices, v);
 
+		//// print temp tree
+		//printf("Testing ");
+		//temp_tree->print_vertices(this);
+
 		addTreeToTreesForCGIfValid(temp_tree); // add the tree to the select_trees_for_CG if valid			
 
+		int num_trees_for_CG_after = select_trees_for_CG.size();
+
+		// check if the number of trees for CG is not increasing
+		if (num_trees_for_CG_after == num_trees_for_CG_before) {
+			itrs_not_improving++;
+			if (itrs_not_improving >= max_itrs_not_improving) {
+				break; // stop if we are not improving for a long time
+			}
+		}
+		else {
+			itrs_not_improving = 0; // reset the counter
+		}
+		
 		itr++;
 	}
+
+	// print number of trees
+	std::cout << "Number of trees for CG: " << select_trees_for_CG.size() << std::endl;
 
 	delete[] vertices;
 	delete temp_tree;
@@ -1135,14 +1185,16 @@ void _g::addTreeToTreesForCGIfValid(_small_tree* temp_tree) {
 
 	if (!found) {
 
+		
 		// compute weight
 		temp_tree->computeMST(this);
 
 		// check if the weight of the tree is less than UB
 		if (temp_tree->weight <= UB) {
 
+			
 			// print tree
-			temp_tree->print_vertices(this);
+			//temp_tree->print_vertices(this);
 
 			// create a new tree
 			_small_tree* new_tree = new _small_tree();
@@ -1371,13 +1423,7 @@ void _g::populate_trees_ub_from_select_trees() {
 	// sort trees based on their weight
 	std::sort(trees_ub.begin(), trees_ub.end(), [](const _tree* a, const _tree* b) {
 		return a->weight > b->weight;
-		});
-
-
-	// print trees	
-	for (int i = 0; i < trees_ub.size(); i++) {		
-		trees_ub[i]->PrintTree();	
-	}
+		});	
 
 }
 

@@ -124,7 +124,8 @@ class _g
 		int n_user_cuts = 0; // number of user cuts
 		int n_lazy_cuts = 0; // number of lazy cuts
 
-		
+		// BP node count
+		int num_bp_nodes = 0; // number of branch and price nodes
 
 		_g(int num_vertices, int num_edges, int num_trees, int duplication_num);
 		~_g();

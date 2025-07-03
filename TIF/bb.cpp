@@ -167,11 +167,11 @@ bb* bb::Run(int time_limit) {
 			break;
 		}
 
-		if (itr % 3 == 0) {
-			printf("Iteration %d: Number of nodes: %d, Number of trees: %d, UB: %d, LB: %d, Time: %d \n",
-				itr, num_nodes, num_trees_generated, instance->UB, 
-				root->LB, (int)((double)(end - start) / CLOCKS_PER_SEC));
-		}
+		//if (itr % 3 == 0) {
+		//	printf("Iteration %d: Number of nodes: %d, Number of trees: %d, UB: %d, LB: %d, Time: %d \n",
+		//		itr, num_nodes, num_trees_generated, instance->UB, 
+		//		root->LB, (int)((double)(end - start) / CLOCKS_PER_SEC));
+		//}
 
 		// number of trees before branching
 		num_tree_before = num_trees_generated;

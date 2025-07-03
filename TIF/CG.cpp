@@ -68,6 +68,8 @@ CG* CG::Run_BP() {
 	timer_CG.setStartTime();
 	Run_CG(root, timer_CG);
 
+	this->instance->_lb_root = root->LB; // set the lower bound of the root node
+
 	// create a temp node --- only a pointer 
 	BP_node* temp; 
 
@@ -189,7 +191,7 @@ CG* CG::Run_BP() {
 
 // run
 CG* CG::Run_CG(BP_node* node, Timer timer_CG) {
-
+	this->instance->num_bp_nodes++;
 	Impose_Braching(node);		
 
 	Timer timer;
@@ -313,15 +315,25 @@ CG* CG::Run_CG(BP_node* node, Timer timer_CG) {
 			// if number of trees added is larger than the last upper bound update, update the upper bound
 			if (this->instance->select_trees_for_CG.size() - last_upper_bound_update_num_trees > min_tree_added_trigger_upperbound) {
 				
-				int previous_UB = instance->UB; // save previous upper bound
-				UpdateUB(); // update upper bound				
-				
-				// if upper bound is not updated
-				if (instance->UB < previous_UB) {				
-					printf("\n ***** Update UB: %d -> %d\n", previous_UB, instance->UB);
-				}
+				// if lower_bound is less than UB
+				if (obj < instance->UB - 0.999) {
 
-				last_upper_bound_update_num_trees = this->instance->select_trees_for_CG.size();
+					printf("\n ***** Compute UB: ");
+
+					int previous_UB = instance->UB; // save previous upper bound
+					UpdateUB(); // update upper bound				
+					printf("%d \n",instance->UB);
+					// if upper bound is not updated
+					if (instance->UB < previous_UB) {
+						printf(" ***** Update UB: %d -> %d\n", previous_UB, instance->UB);
+						min_tree_added_trigger_upperbound = 20; // update the trigger for upper bound update
+					}
+					else {
+						min_tree_added_trigger_upperbound = min(50, min_tree_added_trigger_upperbound+20); // update the trigger for upper bound update
+					}
+
+					last_upper_bound_update_num_trees = this->instance->select_trees_for_CG.size();
+				}
 			}
 		}
 		else {
@@ -611,8 +623,8 @@ void CG::AddVar(int i, bool integer = false) {
 	_g* g = instance;
 
 	// add variables
-	sprintf(name, "x_%d", i);
-	IloNumVar Xvar(env, 0, IloInfinity, integer?ILOINT:ILOFLOAT, name);
+//	sprintf(name, "x_%d", i);
+IloNumVar Xvar(env, 0, IloInfinity, integer ? ILOINT : ILOFLOAT);
 
 	obj.setLinearCoef(Xvar, 0);
 	Knapsack.setLinearCoef(Xvar, -1);
