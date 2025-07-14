@@ -239,6 +239,9 @@ bb* bb::Run(int time_limit) {
 	// copy the trees to the vector
 	populate_all_trees();
 
+	// print number of trees generated
+	std::cout << "Number of trees generated: " << instance->select_trees_for_CG.size() << std::endl;
+
 	return this;
 }
 

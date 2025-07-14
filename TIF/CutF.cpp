@@ -134,6 +134,12 @@ ILOUSERCUTCALLBACK1(callbackuser, CutF*, cutF) {
 		cutF->instance->_lb_root = getBestObjValue(); // LP relaxation bound at root		
 	}
 
+	if (getNnodes() > 0) {
+		// stop the cplex	
+		
+		abort(); // Stop solving early
+	}
+
 	cutF->usercallback_count++;
 	
 	// create a two dimensional array to store the opt x

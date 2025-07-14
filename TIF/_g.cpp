@@ -7,6 +7,7 @@
 #include<direct.h>
 #include "binary.h"
 #include "AVLTree.h"
+#include "timer.h"
 
 #include <lemon/edmonds_karp.h>
 
@@ -1089,9 +1090,14 @@ void _g::generateTreesForCG() {
 	// n = num_vertices
 	// k = num_trees
 
-	int target_n_trees = (int)ceil(100 * (2 * num_vertices - 36 + 3 / (1 + exp(num_trees - 5))));			
+	int target_n_trees = (int)ceil(pow(2, 0.1 * num_vertices + 12 - 0.5 * num_trees));
 	int itrs_not_improving = 0; // number of iterations not improving the number of trees
 	int max_itrs_not_improving = 1000; // maximum number of iterations not improving the number of trees
+
+	int last_printed_itr = 0; // last printed iteration
+	
+	Timer timer; // timer for the iterations
+	timer.setStartTime(); // start the timer
 
 	while (true) {
 
@@ -1099,6 +1105,15 @@ void _g::generateTreesForCG() {
 		if (num_trees_for_CG_before >= target_n_trees) {
 			break;
 		}
+
+		if (itr - last_printed_itr > 1000) {
+			// print the number of trees every 1000 iterations
+			timer.setEndTime(); // end the timer
+			double elapsed_time = timer.calcElaspedTime_sec(); // get the elapsed time
+			printf("Iteration %d: Number of trees for CG: %d, Elapsed time: %.2f seconds\n", itr, select_trees_for_CG.size(), elapsed_time);
+			last_printed_itr = itr;
+		}
+
 
 		// select a random tree from select trees	
 		int ran = rand(); 

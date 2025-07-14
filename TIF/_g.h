@@ -53,6 +53,7 @@ class _g
 		double _opt = MAXINT;
 		double _lp_bound = 0;
 		double _lb_root = 0;
+		double _lb_final = 0; // final lower bound after the algorithm stops
 
 		Graph dg;
 		_render* render;

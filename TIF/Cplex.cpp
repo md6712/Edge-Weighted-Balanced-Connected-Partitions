@@ -34,7 +34,7 @@ void Cplex::CplexSettings() {
 	cplex.setParam(IloCplex::Threads, 1);
 		
 	// Set the time limit to 30 minutes
-	cplex.setParam(cplex.TiLim, TIME_LIMIT);
+	cplex.setParam(cplex.TiLim, time_limit);
 	
 	// set number of threads	
 	cplex.setParam(cplex.Threads, 1);

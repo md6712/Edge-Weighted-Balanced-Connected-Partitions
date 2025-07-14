@@ -43,7 +43,22 @@ class CG :
 	int best_pair[2]; // best pair of vertices
 
 	// sorted linked list to keep the BP nodes
-	BP_node* root = nullptr;
+	//BP_node* root = nullptr;
+
+	// vector of active nodes   
+	std::vector<BP_node*> active_nodes;
+    
+    // vector or premature nodes
+	std::vector<BP_node*> premature_nodes;
+
+	// vector of nodes to be removed
+	std::vector<BP_node*> nodes_to_remove;
+
+
+
+
+    // sorted indices for + reduced cost reduction
+	int* sorted_indices;
 
     // constructor and destructor   
     CG(_g*, bool, bool);
@@ -60,7 +75,11 @@ class CG :
 
     // add variables 
     void AddVars(bool integer);
+	
     void AddVar(int i, bool integer);
+
+	// add x variables
+	void AddXVars(bool integer);
 
 	// remove variables
 	void RemoveXVars();
@@ -68,9 +87,17 @@ class CG :
     // update UB
     void UpdateUB();
 
+    // remove variables with large positive reduced cost 
+	void RemoveLargePositiveReducedCost(IloNumArray reducedCosts);
+
+    // update recursive prematurity
+	void UpdatePrematureParent(BP_node* node);
+
+	// update confirmed lower bound
+	void UpdateConfirmedLB(BP_node* node);
+
     // add objective function
     void AddObj();
-
 
 	// void compute total assignment
 	void ComputeTotalAssignment(BP_node* node);
@@ -85,10 +112,11 @@ class CG :
 	void AddArtificialColumns(BP_node* node);
 
     // print NodeList   
-	void PrintNodeList(BP_node *root);
+	void PrintNodeList();
 
     // print node
 	void PrintNode(BP_node* node);
+    
 
 };
 

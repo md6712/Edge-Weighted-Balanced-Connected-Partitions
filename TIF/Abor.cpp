@@ -552,12 +552,14 @@ void Abor::AddConsExactlyOneArcFromRoot() {
 	IloExpr cons(env);
 	for (int a = 0; a < this->instance->num_arcs; a++) {
 		if (this->instance->arcs[a][0] == this->instance->num_vertices) {
-			cons += x[a];
+			cons += x[a];			
 		}
 	}
 	// name
 	sprintf(name, "Cons_ExactlyOneArcFromRoot");
 	model.add(cons == 1).setName(name);
+
+	// if 
 	cons.end();
 }
 
@@ -680,7 +682,6 @@ Abor* Abor::AddNoGoodCuts(int num_trees_to_add, _small_tree** trees_to_add) {
 
 	return this;
 }
-
 
 Abor* Abor::Init(_pcst* pcst, double fixed_cost){
 	// set the vertex prizes; these prices are not used directly in the model, but used to dominate some cases

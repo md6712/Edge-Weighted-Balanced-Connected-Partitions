@@ -395,6 +395,9 @@ CGPrice* CGPrice::Run() {
 	if (halted) {
 		this->opt = ub_positive;
 	}
+	else {
+		this->opt = cplex.getObjValue();
+	}
 	return this;
 }
 
@@ -1012,7 +1015,10 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 	double total_zeta = 0;
 	int num_roots = 0;
 
-	for (int i = pow(2, num_vertices_pos_zeta) - 1; i >= 0; i--) {
+	this->aborescence->ResetTimeLimit();
+
+	for (int i = pow(2, num_vertices_pos_zeta) - 1; i >= 0/*-this->instance->num_vertices*/; i--) {	
+
 		// set the number of roots to zero
 		num_roots = 0;
 
@@ -1024,23 +1030,42 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 			edge_costs[e] = instance->edges[e][2]; //- min_prize;
 		}
 
-		// loop over all vertices and check if the vertex is set to be included
-		for (int j = 0; j < num_vertices_pos_zeta; j++) {
-			if (checkbinSingle(i, j)) {
+		if (i >= 0) {
+			// loop over all vertices and check if the vertex is set to be included
+			for (int j = 0; j < num_vertices_pos_zeta; j++) {
+				if (checkbinSingle(i, j)) {
 
-				// in this case, I don't increase the reward but just add it as a root and thus it will be included in tree anyway.
-				total_zeta += zeta[vertcies_pos_zeta[j]];
-				roots_pcst[num_roots++] = vertcies_pos_zeta[j];
-			}
-			else {
-				// if the vertex is set to be excluded, set the adjacent edge weights to 1000000 ;  too expensive to be visited
-				for (int e = 0; e < instance->num_edges; e++) {
-					if (instance->edges[e][0] == vertcies_pos_zeta[j] || instance->edges[e][1] == vertcies_pos_zeta[j]) {
-						edge_costs[e] = 1000000;
+					// in this case, I don't increase the reward but just add it as a root and thus it will be included in tree anyway.
+					total_zeta += zeta[vertcies_pos_zeta[j]];
+					roots_pcst[num_roots++] = vertcies_pos_zeta[j];
+				}
+				else {
+					// if the vertex is set to be excluded, set the adjacent edge weights to 1000000 ;  too expensive to be visited
+					for (int e = 0; e < instance->num_edges; e++) {
+						if (instance->edges[e][0] == vertcies_pos_zeta[j] || instance->edges[e][1] == vertcies_pos_zeta[j]) {
+							edge_costs[e] = 1000000;
+						}
 					}
 				}
 			}
 		}
+		//else {			
+		//	int root = -i;
+		//	// root should not be part of vertices_pos_zeta
+		//	int j = 0;
+		//	for (; j < num_vertices_pos_zeta; j++) {
+		//		if (vertcies_pos_zeta[j] == root) {
+		//			break;
+		//		}
+		//		for (int e = 0; e < instance->num_edges; e++) {
+		//			if (instance->edges[e][0] == root || instance->edges[e][1] == root) {
+		//				edge_costs[e] = 1000000; // too expensive to be visited
+		//			}
+		//		}
+		//	}
+		//	if (j < num_vertices_pos_zeta) continue;			
+		//	roots_pcst[num_roots++] = root; // in this case, we just add the root and thus it will be included in tree anyway.
+		//}
 
 		// compute vertex weight for each edge
 		for (int e = 0; e < instance->num_edges; e++) {
@@ -1068,11 +1093,9 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 
 		timer.setEndTime();
 		double elapsed_time = timer.calcElaspedTime_sec();
-
 			
 		// print time elapsed
 		//printf("Time elapsed Prepare: %4.3f\n", elapsed_time);
-
 		
 		timer.setStartTime();		
 		// init the aborescence instance
@@ -1085,6 +1108,20 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 			this->aborescence->AddNoGoodCuts(num_trees_to_add, trees_to_add);
 		}
 			
+		////// if a tree has been already added, set time limit to 0.01 seconds. 
+		//if (num_trees_to_add > 0) {
+		//	this->aborescence->SetTimeLimit(10);
+		//}
+		//if (num_trees_to_add > 5) {
+		//	this->aborescence->SetTimeLimit(4);
+		//}
+		//if (num_trees_to_add > 10) {
+		//	this->aborescence->SetTimeLimit(2);
+		//}
+		//if (num_trees_to_add > 20) {
+		//	this->aborescence->SetTimeLimit(1);
+		//}		
+
 		// run the aborescence instance
 		AborSol** abor_opt = this->aborescence->Run(zeta,-1,log);
 		timer.setEndTime();
@@ -1103,11 +1140,12 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 			best_pcst = abor_opt[0]->value;
 		}
 
+		int n_added = 0;
+
 		for (int sol = 0; sol < MAX_ABOR_SOL; sol++){
 			if (abor_opt[sol]->value < 0.001) break; 
 		// if abor_opt value is greater than zero, then we add a copy of the associated tree to the list of trees to add
-			if (abor_opt[sol]->value >= 0.001 && add_trees) {
-
+			if (abor_opt[sol]->value >= 0.001 && add_trees) {			
 				// check if the tree is already in the list of trees to add
 				bool added = false;
 
@@ -1121,6 +1159,7 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 
 				// if the tree is not already added, we add it
 				if (!added) {
+					n_added++;
 					// create a new tree
 					_small_tree* tree = new _small_tree();
 
@@ -1133,10 +1172,10 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 					// add the tree to the list of trees to add
 					trees_to_add[num_trees_to_add++] = tree;
 
-					//// print the cost of tree
+					// print the cost of tree
 					printf("Abor objective value [%7d]: %6.2lf \t", i, abor_opt[sol]->value);
 
-					//// print the tree
+					// print the tree
 					tree->print_vertices(this->instance);
 
 					// stop after adding one tree
@@ -1144,10 +1183,14 @@ double CGPrice::solve_pcst_fix_select_vertices(BP_node* node, bool log, bool for
 				}
 			}
 		}
+
+		if (n_added == 0) {
+			printf("Abor objective value [%7d]: -- \n", i);
+		}
 	}
 
 	// print the best pcst
-	//printf("Best PCST: %4.2lf\n", best_pcst);
+	printf(" ***** Best PCST: %4.2lf\n", best_pcst);
 
 	return best_pcst;
 }
@@ -1160,6 +1203,10 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 
 	// set the best pcst
 	best_pcst = -INFINITY;
+
+	// reset the number of trees to add
+	this->aborescence->ResetTimeLimit();
+
 
 	for (int w = instance->UB; w > 1; w--) {
 
@@ -1230,6 +1277,12 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 
 		// run the aborescence instance	
 		this->aborescence->force_silent = false;
+
+		////// if a tree has been already added, set time limit to 0.01 seconds. 
+		//if (num_trees_to_add > 0) {
+		//	this->aborescence->SetTimeLimit(1);
+		//}
+
 		AborSol** abor_opt = this->aborescence->Run(zeta, w, log);
 
 		timer.setEndTime();
@@ -1237,12 +1290,12 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 		//printf("Time elapsed Solve: %4.3f\n", elapsed_time);
 
 		// update best pcst 
-		if (abor_opt[0]->value > best_pcst) {
-			best_pcst = abor_opt[0]->value;
+		if (abor_opt[0]->value_f > best_pcst) {
+			best_pcst = abor_opt[0]->value_f;
 		}
 		
 		// if value is zero and we have already added a tree -> stop
-		if (abor_opt[0]->value < 0.001 && num_trees_to_add > 0) {
+		if (abor_opt[0]->value_f < 0.001 && num_trees_to_add > 0) {
 			w = abor_opt[0]->tree->weight;
 			continue;
 		}
@@ -1253,11 +1306,13 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 		//printf("Abor objective value [%7d]: %6.2lf | %6.2lf \n", w, abor_opt->value, abor_opt->value_f);
 
 		int min_w = 100000;
+		int n_added = 0; 
 		
 		for (int sol = 0; sol < MAX_ABOR_SOL; sol++) {
-			if (abor_opt[sol]->value < 0.001) break;
+			if (abor_opt[sol]->value_f < 0.001) break;
 			// if abor_opt value is greater than zero, then we add a copy of the associated tree to the list of trees to add
-			if (abor_opt[sol]->value >= 0.001 && add_trees) {
+			if (abor_opt[sol]->value_f >= 0.001 && add_trees) {
+				n_added++;
 
 				min_w = min(min_w, abor_opt[sol]->tree->weight);
 
@@ -1274,6 +1329,7 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 
 				// if the tree is not already added, we add it
 				if (!added) {
+
 					//if (true) {
 						// create a new tree
 					_small_tree* tree = new _small_tree();
@@ -1297,14 +1353,18 @@ double CGPrice::solve_pcst_fix_w(BP_node* node, bool log, bool force_new_tree, b
 		}
 
 		// Jump if the tree is already added
-		if (abor_opt[0]->value >= 0.001) {			
+		if (n_added>0 && abor_opt[0]->value_f >= 0.001) {			
 			//w = min_w; // set the weight of the tree to the current weight
 			w = abor_opt[0]->tree->weight; // set the weight of the tree to the current weight
+		}
+
+		if (n_added == 0) {
+			printf("Abor objective value [%7d]: -- \n", w);
 		}
 	}
 
 	// print the best pcst
-	//printf("Best PCST: %4.2lf\n", best_pcst);
+	printf(" ***** Best PCST: %4.2lf\n", best_pcst);
 
 	return best_pcst;
 }

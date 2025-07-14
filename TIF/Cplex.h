@@ -4,7 +4,7 @@
 #include <ilcplex/ilocplex.h>
 #include "_g.h"
 
-#define TIME_LIMIT 1800 // 30 minutes in seconds
+#define TIME_LIMIT 10800 // 3 hours in seconds
 
 using namespace std;
 
@@ -30,6 +30,8 @@ public:
 	bool printCuts;
 
 	bool force_silent = false; // force silent mode
+
+	double time_limit = TIME_LIMIT; // time limit in seconds
 	
 	char name[50];
 	char cut[500];
@@ -67,7 +69,17 @@ public:
 	// turn  cplex cuts to default
 	void* SetCutsDefault();
 
-	// turn on all cplex cuts
+	// set time limit	
+	void SetTimeLimit(double time_limit) {
+		this->time_limit = time_limit;
+		cplex.setParam(IloCplex::TiLim, time_limit);
+	}
+
+	// reset time limit
+	void ResetTimeLimit() {
+		this->time_limit = TIME_LIMIT;
+		cplex.setParam(IloCplex::TiLim, TIME_LIMIT);
+	}
 
 
 };

@@ -735,7 +735,7 @@ _pcst* _pcst::make_aborescence_instance() {
 
 	// create arcs from the root to the vertices
 	for (int v = 0; v < this->num_vertices; v++) {
-		if (this->vertex_aborescence_active[v]) {
+		if (this->vertex_aborescence_active[v] /*&& this->vertex_prize[v] > 0*/) {
 			int a = this->num_edges * 2 + v;
 			this->arc_active[a] = true;
 			this->arc_cost[a] = -this->vertex_prize[v];

@@ -64,6 +64,7 @@ int main() {
                     // Generate random graph
                     boost::generate_random_graph(g, num_vertices, num_edges, gen, false, false);
 
+
                     // 
                     int num = boost::connected_components(g, &component[0]);
 
