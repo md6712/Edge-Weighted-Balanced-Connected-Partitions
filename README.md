@@ -1,28 +1,45 @@
 # Edge-Weighted Balanced Connected Partitions
 
-This repository contains code based on the following research paper:
+This repository contains the code accompanying the research paper:
 
 **Morteza Davari, Phablo F. S. Moura, and Hande Yaman**  
-*Edge-weighted balanced connected partitions: Hardness and formulations*, 2025.  
+*Edge-Weighted Balanced Connected Partitions: Hardness and Formulations*, 2025.  
 [arXiv:2504.02421](https://arxiv.org/abs/2504.02421)
 
-> 📌 **Note:** This commit corresponds to the version of the code just prior to the initial submission of the paper.
+> 📌 **Note:** This version of the repository corresponds to the codebase used for the initial submission of the paper.
 
 ## Overview
 
-The code provides implementations of algorithms and mathematical formulations for solving the **Edge-Weighted Balanced Connected Partition** problem. The problem involves partitioning a graph into connected components that are balanced (in terms of weights or sizes) while minimizing the total cost of cut edges.
+This code provides implementations of various exact algorithms and mathematical formulations for the **Edge-Weighted Balanced Connected Partition** problem. The objective is to partition a graph into connected components that are balanced (e.g., in size or weight) while minimizing the total cost of cut edges.
+
+## Directory Structure
+
+- **`TIF/`**  
+  Contains the full implementation of all methods described in the paper, including different formulations and algorithms.
+
+- **`HeaviestBalancedTree/`**  
+  Includes the code used for generating test instances.
+
+## Compilation
+
+The codebase was developed using **Visual Studio C++ 2025**. For Linux-based systems, you can compile the code using **CMake**. Ensure that the following libraries are installed and properly linked:
+
+- [Boost](https://www.boost.org/)
+- [LEMON](https://lemon.cs.elte.hu/trac/lemon)
+- [IBM ILOG CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio)
+- [SFML](https://www.sfml-dev.org/) (Simple and Fast Multimedia Library) — if needed for visualization or I/O
+
+> ⚠️ Make sure CPLEX is licensed and properly set up in your environment.
 
 ## Citation
 
-If you use this code in your research, please cite the following:
+If you use this code in your research, please cite the paper as follows:
 
 ```bibtex
 @misc{davari2025edgeweightedbalancedconnectedpartitions,
-  title        = {Edge-weighted balanced connected partitions: Hardness and formulations},
+  title        = {Edge-Weighted Balanced Connected Partitions: Hardness and Formulations},
   author       = {Morteza Davari and Phablo F. S. Moura and Hande Yaman},
   year         = {2025},
   eprint       = {2504.02421},
   archivePrefix = {arXiv},
-  primaryClass = {cs.DS},
-  url          = {https://arxiv.org/abs/2504.02421}
-}
+  primaryClass = {cs.D
