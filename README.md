@@ -10,7 +10,7 @@ This repository contains the code accompanying the research paper:
 
 ## Overview
 
-This code provides implementations of various exact algorithms and mathematical formulations for the **Edge-Weighted Balanced Connected Partition** problem. The objective is to partition a graph into connected components that are balanced (e.g., in size or weight) while minimizing the total cost of cut edges.
+This code provides implementations of various exact algorithms and mathematical formulations for the **Edge-Weighted Balanced Connected Partition** problem. The objective is to partition an edge-weighted graph into connected tree components that are balanced (in weight) while minimizing the heaviest component.
 
 ## Directory Structure
 
