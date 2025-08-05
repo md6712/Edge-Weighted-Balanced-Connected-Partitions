@@ -53,6 +53,7 @@ Each instance file is a plain text file with the following structure:
   - `wᵢ` – Non-negative weight of the edge
 
 ### 📘 Example
+```txt
 10	13	2
 3	 6 	 52
 4	 5 	 91
