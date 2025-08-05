@@ -67,6 +67,7 @@ Each instance file is a plain text file with the following structure:
 6	 5 	 56
 6	 8 	 92
 7	 6 	 43
+```
 
 ![Graph Visualization](graph.png)
 
