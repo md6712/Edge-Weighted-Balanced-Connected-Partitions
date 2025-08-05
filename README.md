@@ -20,6 +20,12 @@ This code provides implementations of various exact algorithms and mathematical 
 - **`HeaviestBalancedTree/`**  
   Includes the code used for generating test instances.
 
+- **`Computational Results/`**  
+  Contains output data, tables, and performance results from running the algorithms on benchmark instances.
+
+- **`Instances/`**  
+  Provides the graph instances used in the experiments, including input files for testing various scenarios.
+
 ## Compilation
 
 The codebase was developed using **Visual Studio C++ 2025**. For Linux-based systems, you can compile the code using **CMake**. Ensure that the following libraries are installed and properly linked:
@@ -42,4 +48,5 @@ If you use this code in your research, please cite the paper as follows:
   year         = {2025},
   eprint       = {2504.02421},
   archivePrefix = {arXiv},
-  primaryClass = {cs.D
+  primaryClass = {cs.DS}
+}
